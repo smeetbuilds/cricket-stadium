@@ -11,7 +11,8 @@ export const TRANSFORM_STAGES = Object.freeze([
   'optimize-render-loop.mjs',
   'optimize-runtime.mjs',
   'optimize-responsive.mjs',
-  'harden-browser-runtime.mjs'
+  'harden-browser-runtime.mjs',
+  'sanitize-generated-css.mjs'
 ]);
 
 export const VALIDATION_STAGES = Object.freeze([

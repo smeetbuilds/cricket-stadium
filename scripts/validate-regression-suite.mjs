@@ -34,7 +34,8 @@ const expectedTransforms = [
   'optimize-render-loop.mjs',
   'optimize-runtime.mjs',
   'optimize-responsive.mjs',
-  'harden-browser-runtime.mjs'
+  'harden-browser-runtime.mjs',
+  'sanitize-generated-css.mjs'
 ];
 const expectedValidators = [
   'validate-ui-ux.mjs',
@@ -59,6 +60,10 @@ if (count(/<html\b/gi) !== 1 || count(/<\/html>/gi) !== 1) fail('HTML root struc
 if (count(/<head\b/gi) !== 1 || count(/<\/head>/gi) !== 1) fail('head structure is malformed');
 if (count(/<body\b/gi) !== 1 || count(/<\/body>/gi) !== 1) fail('body structure is malformed');
 if (count(/<style>/g) !== 1 || count(/<\/style>/g) !== 1) fail('expected one consolidated style block');
+
+const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
+if (!styleMatch) fail('consolidated style block could not be read');
+if (styleMatch[1].includes('\\n')) fail('literal escaped-newline token leaked into generated CSS');
 
 const scripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
 const inlineScripts = scripts.map(match => match[1]).filter(code => code.trim());
@@ -100,5 +105,5 @@ for (const [needle, label] of forbiddenBuildLeakage) {
 
 console.log(
   `Phase 16 consolidated regression suite validated: ${TRANSFORM_STAGES.length} ordered transforms, ` +
-  `${VALIDATION_STAGES.length} ordered read-only validators, final generated JS syntax, document structure and shared cross-phase runtime invariants`
+  `${VALIDATION_STAGES.length} ordered read-only validators, final generated JS syntax, CSS escape hygiene, document structure and shared cross-phase runtime invariants`
 );
