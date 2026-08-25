@@ -1,0 +1,142 @@
+import { readFile, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+const root = resolve(import.meta.dirname, "..");
+const outputPath = resolve(root, "dist", "index.html");
+let html = await readFile(outputPath, "utf8");
+
+function replaceExact(before, after, label) {
+  if (!html.includes(before)) {
+    throw new Error(`Phase-6 shadow patch target missing (${label}): ${before.slice(0, 180)}…`);
+  }
+  html = html.replace(before, after);
+}
+
+const protectedRequired = [
+  'rows:35,rx:86.8,rz:72.8,depth:.86,y:3.7,rise:.43',
+  'rows:32,rx:118.7,rz:104.7,depth:.88,y:26.4,rise:.57',
+  'field:{L:180*.9144,W:150*.9144}',
+  'pitch:{L:22*.9144,W:3.05}',
+  'm.position.set(s*84.3,4.1,0)',
+  'const turfW=qualityLow?512:1024,turfH=qualityLow?256:512',
+  'new THREE.CanvasTexture(turfCanvas)',
+  'turf.position.y=.045;turf.receiveShadow=true;scene.add(turf)',
+  'color:0xad986d,roughness:.98',
+  'activePitchMat=new THREE.MeshStandardMaterial({color:0xcab27a',
+  'const circleDashCount=48',
+  'new THREE.ShapeGeometry(ring(boundaryRx+.045,boundaryRz+.045,boundaryRx-.045,boundaryRz-.045),256)',
+  'new THREE.PerspectiveCamera(45,innerWidth/innerHeight,2,700)',
+  'camera.near=.05;camera.far=700;camera.fov=58;camera.updateProjectionMatrix()',
+  'pan.castShadow=false;pan.receiveShadow=true',
+  'back.castShadow=false;back.receiveShadow=true',
+  'const actualNavDegFromAngle=a=>actualWrapDeg(THREE.MathUtils.radToDeg(a));',
+  'actualSeatMeta(m).blockId===actualSelectedBlock&&actualSeatMeta(m).bay===actualSelectedBay',
+  'function moveSeatCameraTo(m,duration=reduced?0:.72)',
+  'if(seatMode)moveSeatCameraTo(m)',
+  'ray.ray.intersectsSphere(sphere)',
+  'function drawMinimap()',
+  'ui.navSeat.addEventListener("change"',
+  'canvas.addEventListener("pointermove"',
+  'if(pinchStart>8)',
+  '@media(max-width:800px)',
+  '@media(max-width:430px)',
+  '@media(max-height:720px) and (max-width:800px)',
+  '<button class="btn" id="view" disabled>View from seat</button>',
+  '<button id="back">Back to stadium</button>'
+];
+for (const required of protectedRequired) {
+  if (!html.includes(required)) throw new Error(`Phase-6 protected invariant missing: ${required}`);
+}
+
+replaceExact(
+`    const mobile=matchMedia("(max-width: 820px)").matches;
+    const lowPower=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4);
+    const qualityLow=mobile||lowPower,backLOD=lowPower?190:(mobile?215:250);`,
+`    const mobile=matchMedia("(max-width: 820px)").matches;
+    const lowPower=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4);
+    const shadowCompact=matchMedia("(max-width: 520px)").matches,shadowMedium=matchMedia("(max-width: 1180px)").matches;
+    const shadowProfile=lowPower||shadowCompact?"off":(shadowMedium?"medium":"high"),shadowMapSize=shadowProfile==="high"?2048:(shadowProfile==="medium"?1024:0);
+    const qualityLow=mobile||lowPower,backLOD=lowPower?190:(mobile?215:250);`,
+"shadow device profiles"
+);
+
+replaceExact(
+`      renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio||1,qualityLow?1.15:1.75));renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=!qualityLow;`,
+`      renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio||1,qualityLow?1.15:1.75));renderer.outputEncoding=THREE.sRGBEncoding;renderer.shadowMap.enabled=shadowProfile!=="off";renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.shadowMap.autoUpdate=false;`,
+"renderer shadow policy"
+);
+
+replaceExact(
+`    const sun=new THREE.DirectionalLight(0xfff1d2,2.05);sun.position.set(-90,150,65);sun.castShadow=!qualityLow;scene.add(sun);`,
+`    const sun=new THREE.DirectionalLight(0xfff1d2,2.05);sun.position.set(-90,150,65);sun.castShadow=shadowProfile!=="off";if(sun.castShadow){sun.shadow.mapSize.set(shadowMapSize,shadowMapSize);sun.shadow.camera.left=-205;sun.shadow.camera.right=205;sun.shadow.camera.top=185;sun.shadow.camera.bottom=-185;sun.shadow.camera.near=25;sun.shadow.camera.far=360;sun.shadow.bias=-.00025;sun.shadow.normalBias=.035;sun.shadow.radius=shadowProfile==="high"?2:1;sun.shadow.camera.updateProjectionMatrix()}scene.add(sun);`,
+"directional shadow camera"
+);
+
+replaceExact(
+`      [-1,1].forEach(s=>{const frame=new THREE.MeshStandardMaterial({color:0x303940,roughness:.7}),cloth=new THREE.MeshStandardMaterial({color:0xe8e7de,roughness:.9});const m=new THREE.Mesh(new THREE.BoxGeometry(.35,8.2,18),cloth);m.position.set(s*84.3,4.1,0);scene.add(m);for(const z of [-9.3,9.3]){const post=new THREE.Mesh(new THREE.BoxGeometry(.22,9,.22),frame);post.position.set(s*84.3,4.5,z);scene.add(post)}});`,
+`      [-1,1].forEach(s=>{const frame=new THREE.MeshStandardMaterial({color:0x303940,roughness:.7}),cloth=new THREE.MeshStandardMaterial({color:0xe8e7de,roughness:.9});const m=new THREE.Mesh(new THREE.BoxGeometry(.35,8.2,18),cloth);m.position.set(s*84.3,4.1,0);m.castShadow=shadowProfile!=="off";m.receiveShadow=true;scene.add(m);for(const z of [-9.3,9.3]){const post=new THREE.Mesh(new THREE.BoxGeometry(.22,9,.22),frame);post.position.set(s*84.3,4.5,z);post.castShadow=shadowProfile!=="off";post.receiveShadow=true;scene.add(post)}});`,
+"sight-screen casters"
+);
+
+replaceExact(
+`      const entryMat=new THREE.MeshStandardMaterial({color:0x273541,roughness:.8});for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){const m=new THREE.Mesh(new THREE.BoxGeometry(18,5.1,4.4),entryMat);m.position.set(Math.cos(a)*156.2,2.55,Math.sin(a)*141.2);m.rotation.y=-a;scene.add(m)}`,
+`      const entryMat=new THREE.MeshStandardMaterial({color:0x273541,roughness:.8});for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){const m=new THREE.Mesh(new THREE.BoxGeometry(18,5.1,4.4),entryMat);m.position.set(Math.cos(a)*156.2,2.55,Math.sin(a)*141.2);m.rotation.y=-a;m.castShadow=shadowProfile!=="off";m.receiveShadow=true;scene.add(m)}`,
+"perimeter entry casters"
+);
+
+replaceExact(
+`      loadtext.textContent="Building concourse, media and hospitality bands…";hospitality();mediaAreas();loadtext.textContent="Calibrating blue upper bowl…";bowl(CFG.tiers[1],0x30353b);const b=seats(CFG.tiers[1]);aisles(CFG.tiers[1]);railings(CFG.tiers[1]);vomitories(CFG.tiers[1]);roof();populateNavigator();populateActualNavigator();restoreFromUrl();updateLOD();drawMinimap();loadtext.textContent=\`Ready · \${(a+b).toLocaleString()} interactive seat instances\`;setTimeout(()=>loading.classList.add("done"),140)`,
+`      loadtext.textContent="Building concourse, media and hospitality bands…";hospitality();mediaAreas();loadtext.textContent="Calibrating blue upper bowl…";bowl(CFG.tiers[1],0x30353b);const b=seats(CFG.tiers[1]);aisles(CFG.tiers[1]);railings(CFG.tiers[1]);vomitories(CFG.tiers[1]);roof();populateNavigator();populateActualNavigator();restoreFromUrl();updateLOD();drawMinimap();if(renderer.shadowMap.enabled)renderer.shadowMap.needsUpdate=true;loadtext.textContent=\`Ready · \${(a+b).toLocaleString()} interactive seat instances\`;setTimeout(()=>loading.classList.add("done"),140)`,
+"single static shadow-map refresh"
+);
+
+const required = [
+  'const shadowProfile=lowPower||shadowCompact?"off":(shadowMedium?"medium":"high")',
+  'shadowProfile==="high"?2048:(shadowProfile==="medium"?1024:0)',
+  'renderer.shadowMap.enabled=shadowProfile!=="off"',
+  'renderer.shadowMap.type=THREE.PCFSoftShadowMap',
+  'renderer.shadowMap.autoUpdate=false',
+  'sun.shadow.mapSize.set(shadowMapSize,shadowMapSize)',
+  'sun.shadow.camera.left=-205',
+  'sun.shadow.camera.right=205',
+  'sun.shadow.camera.top=185',
+  'sun.shadow.camera.bottom=-185',
+  'sun.shadow.camera.near=25',
+  'sun.shadow.camera.far=360',
+  'sun.shadow.bias=-.00025',
+  'sun.shadow.normalBias=.035',
+  'sun.shadow.radius=shadowProfile==="high"?2:1',
+  'm.castShadow=shadowProfile!=="off";m.receiveShadow=true',
+  'post.castShadow=shadowProfile!=="off";post.receiveShadow=true',
+  'if(renderer.shadowMap.enabled)renderer.shadowMap.needsUpdate=true',
+  'pan.castShadow=false;pan.receiveShadow=true',
+  'back.castShadow=false;back.receiveShadow=true',
+  'const turfW=qualityLow?512:1024,turfH=qualityLow?256:512',
+  'const circleDashCount=48',
+  'function moveSeatCameraTo(m,duration=reduced?0:.72)',
+  'ray.ray.intersectsSphere(sphere)',
+  '@media(max-width:800px)',
+  '@media(max-width:430px)'
+];
+for (const marker of required) {
+  if (!html.includes(marker)) throw new Error(`Phase-6 invariant missing: ${marker}`);
+}
+for (const forbidden of [
+  'renderer.shadowMap.enabled=!qualityLow',
+  'sun.castShadow=!qualityLow',
+  'renderer.shadowMap.autoUpdate=true',
+  'pan.castShadow=!qualityLow',
+  'back.castShadow=!qualityLow',
+  'const stripeMat=',
+  'new THREE.LineDashedMaterial({color:0xe6eadf',
+  'if(!selected||seatMode)return;'
+]) {
+  if (html.includes(forbidden)) throw new Error(`Phase-6 legacy/regression marker still present: ${forbidden}`);
+}
+
+await writeFile(outputPath, html, "utf8");
+console.log(`Optimized static stadium shadows (${shadowPolicySummary()}) without changing stadium UX`);
+
+function shadowPolicySummary() {
+  return "phones/low-power off, capable tablets 1024, desktop 2048, static sight-screen/entry casters only";
+}
