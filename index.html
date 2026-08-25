@@ -13,25 +13,29 @@
   <meta name="description" content="Unofficial procedural 3D recreation of Narendra Modi Stadium, Ahmedabad." />
   <meta name="theme-color" content="#071019" />
   <style>
-    :root{--bg:#071019;--panel:rgba(8,17,27,.92);--line:rgba(255,255,255,.14);--text:#f7f3ea;--muted:#a0acb9;--orange:#f47a2a;--navy:#26366b}
+    :root{--bg:#071019;--panel:rgba(8,17,27,.92);--line:rgba(255,255,255,.14);--text:#f7f3ea;--muted:#a0acb9;--orange:#f47a2a;--navy:#26366b;--focus:#5ed7ff}
     *{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-    button{font:inherit}button:focus-visible{outline:3px solid #fff;outline-offset:3px}
+    button,select{font:inherit}button:focus-visible,select:focus-visible{outline:3px solid #fff;outline-offset:2px}
     #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}#c.drag{cursor:grabbing}#c.seatmode{cursor:move}
     #vig{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 45%,transparent 42%,rgba(0,0,0,.43))}
     .glass{border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
     header{position:fixed;z-index:10;top:max(14px,env(safe-area-inset-top));left:14px;right:14px;display:flex;justify-content:space-between;gap:12px;pointer-events:none}
     .brand,.facts{pointer-events:auto}.brand{padding:12px 14px;border-radius:16px;min-width:270px}.brand strong{display:block;font-size:15px;letter-spacing:-.02em}.brand span{display:block;margin-top:4px;color:var(--muted);font-size:10px}.brand em{display:inline-block;margin-top:8px;padding:4px 7px;border-radius:999px;background:rgba(244,122,42,.14);color:#ffd3b7;font-size:9px;font-style:normal;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
     .facts{display:grid;grid-template-columns:repeat(3,1fr);border-radius:16px;overflow:hidden}.fact{min-width:108px;padding:11px 13px;border-left:1px solid var(--line)}.fact:first-child{border-left:0}.fact b{display:block;font-size:14px}.fact span{display:block;margin-top:3px;color:var(--muted);font-size:8px;text-transform:uppercase;letter-spacing:.06em}
-    #card{position:fixed;z-index:10;left:14px;bottom:max(14px,env(safe-area-inset-bottom));width:min(360px,calc(100vw - 28px));padding:15px;border-radius:17px}
+    #card{position:fixed;z-index:10;left:14px;bottom:max(14px,env(safe-area-inset-bottom));width:min(410px,calc(100vw - 28px));padding:15px;border-radius:17px}
     .kicker{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.07em;font-weight:800}.pill{padding:4px 7px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--text)}
-    h2{margin:12px 0 5px;font-size:23px;line-height:1;letter-spacing:-.035em}#sub{min-height:30px;margin:0 0 12px;color:var(--muted);font-size:10.5px;line-height:1.45}
+    h2{margin:12px 0 5px;font-size:23px;line-height:1;letter-spacing:-.035em}#sub{min-height:30px;margin:0 0 11px;color:var(--muted);font-size:10.5px;line-height:1.45}
+    .finder{padding:10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.035);margin-bottom:10px}.finder-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}.finder-head b{font-size:9px;text-transform:uppercase;letter-spacing:.07em}.finder-head span{font-size:8px;color:var(--muted)}
+    .navgrid{display:grid;grid-template-columns:1.25fr .8fr .8fr;gap:7px}.navfield label{display:block;margin:0 0 4px;color:var(--muted);font-size:7px;text-transform:uppercase;letter-spacing:.07em}.navfield select{width:100%;height:34px;padding:0 27px 0 8px;border:1px solid var(--line);border-radius:8px;background:#101a25;color:var(--text);font-size:10px;font-weight:750;cursor:pointer}.navfield select:disabled{opacity:.45;cursor:not-allowed}
+    .section-state{display:flex;align-items:center;gap:6px;margin-top:8px;color:var(--muted);font-size:8px}.section-state i{width:7px;height:7px;border-radius:50%;background:var(--focus);box-shadow:0 0 10px rgba(94,215,255,.7)}
     .data{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.cell{padding:9px;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.035)}.cell span{display:block;color:var(--muted);font-size:7px;text-transform:uppercase;letter-spacing:.07em}.cell b{display:block;margin-top:4px;font-family:ui-monospace,monospace;font-size:12px}
     .actions{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:10px}.btn{min-height:42px;border:0;border-radius:11px;padding:0 13px;background:var(--orange);color:#111;font-weight:850;cursor:pointer}.btn:disabled{opacity:.36;cursor:not-allowed}.btn.alt{border:1px solid var(--line);background:rgba(255,255,255,.07);color:var(--text)}
     #note{position:fixed;z-index:9;right:14px;bottom:max(14px,env(safe-area-inset-bottom));max-width:330px;padding:10px 12px;border-radius:13px;color:var(--muted);font-size:9px;line-height:1.45}#note b{color:var(--text)}
     #tools{position:fixed;z-index:11;right:14px;top:50%;transform:translateY(-50%);display:grid;gap:6px;padding:6px;border-radius:13px}.tool{width:39px;height:39px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.06);color:var(--text);font-size:17px;cursor:pointer}
     #seatbar{position:fixed;z-index:12;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);display:none;align-items:center;gap:10px;padding:7px 8px 7px 12px;border-radius:999px;color:var(--muted);font-size:9px;white-space:nowrap}#seatbar.show{display:flex}#seatbar button{border:0;border-radius:999px;padding:7px 10px;background:var(--orange);color:#111;font-size:9px;font-weight:850;cursor:pointer}
     #loading{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#071019;transition:.35s opacity,.35s visibility}#loading.done{opacity:0;visibility:hidden;pointer-events:none}.loader{text-align:center}.ring{width:62px;height:62px;margin:0 auto 16px;border:7px solid var(--navy);border-top-color:var(--orange);border-radius:50%;animation:spin .9s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.loader span{display:block;margin-top:6px;color:var(--muted);font-size:10px}
-    @media(max-width:800px){header{top:max(9px,env(safe-area-inset-top));left:9px;right:9px}.brand{width:100%;min-width:0;padding:10px 11px}.brand strong{font-size:13px}.brand em,.facts,#note{display:none}#card{left:9px;right:9px;bottom:max(9px,env(safe-area-inset-bottom));width:auto;padding:12px}h2{font-size:19px}#tools{right:9px;top:42%}body.seatmode #card,body.seatmode #tools{display:none}#seatbar{width:calc(100vw - 18px);justify-content:space-between}}
+    @media(max-width:800px){header{top:max(9px,env(safe-area-inset-top));left:9px;right:9px}.brand{width:100%;min-width:0;padding:10px 11px}.brand strong{font-size:13px}.brand em,.facts,#note{display:none}#card{left:9px;right:9px;bottom:max(9px,env(safe-area-inset-bottom));width:auto;padding:11px}.finder{padding:8px}.navgrid{gap:5px}.navfield select{height:32px;padding-left:6px;font-size:9px}h2{font-size:19px;margin-top:9px}#sub{min-height:0;margin-bottom:8px}.data .cell{padding:7px}#tools{right:9px;top:38%}body.seatmode #card,body.seatmode #tools{display:none}#seatbar{width:calc(100vw - 18px);justify-content:space-between}}
+    @media(max-height:720px) and (max-width:800px){.brand span,.finder-head span,#sub{display:none}.brand{padding:8px 10px}#card{padding:9px}.finder{margin-bottom:7px}.actions{margin-top:7px}.btn{min-height:36px}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
   </style>
 </head>
@@ -44,7 +48,16 @@
   <aside id="card" class="glass" aria-live="polite">
     <div class="kicker"><span>Seat explorer</span><span class="pill" id="tier">Select a seat</span></div>
     <h2 id="title">Choose any visible seat</h2>
-    <p id="sub">Drag to orbit, scroll to zoom, then tap a rendered seat for an approximate sightline preview.</p>
+    <p id="sub">Click a rendered seat, use Random, or navigate by generated section, row and seat below.</p>
+    <div class="finder" aria-label="Generated seat navigator">
+      <div class="finder-head"><b>Find a generated seat</b><span>Section → Row → Seat</span></div>
+      <div class="navgrid">
+        <div class="navfield"><label for="nav-section">Section</label><select id="nav-section" aria-label="Section"><option value="">Choose</option></select></div>
+        <div class="navfield"><label for="nav-row">Row</label><select id="nav-row" aria-label="Row" disabled><option value="">—</option></select></div>
+        <div class="navfield"><label for="nav-seat">Seat</label><select id="nav-seat" aria-label="Seat" disabled><option value="">—</option></select></div>
+      </div>
+      <div class="section-state"><i></i><span id="section-state">Choose a section to highlight it in 3D</span></div>
+    </div>
     <div class="data"><div class="cell"><span>Section</span><b id="sec">—</b></div><div class="cell"><span>Row</span><b id="row">—</b></div><div class="cell"><span>Seat</span><b id="seat">—</b></div></div>
     <div class="actions"><button class="btn" id="view" disabled>View from seat</button><button class="btn alt" id="random">Random</button></div>
   </aside>
@@ -65,7 +78,7 @@
       {id:"U",name:"Upper Tier",rows:32,rx:118.7,rz:104.7,depth:.88,y:26.4,rise:.57,spacing:.48,aisle:.029,tunnelRow:9,tunnelRows:4,tunnelEvery:4,pal:["#1f2f67","#263b7a","#ef6c28","#f6ad35","#f8c451"]}
     ]};
     const $=id=>document.getElementById(id),canvas=$("c"),loading=$("loading"),loadtext=$("loadtext");
-    const ui={tier:$("tier"),title:$("title"),sub:$("sub"),sec:$("sec"),row:$("row"),seat:$("seat"),view:$("view"),bar:$("seatbar"),label:$("seatlabel")};
+    const ui={tier:$("tier"),title:$("title"),sub:$("sub"),sec:$("sec"),row:$("row"),seat:$("seat"),view:$("view"),bar:$("seatbar"),label:$("seatlabel"),navSection:$("nav-section"),navRow:$("nav-row"),navSeat:$("nav-seat"),sectionState:$("section-state")};
     const reduced=matchMedia("(prefers-reduced-motion:reduce)").matches,low=innerWidth<820||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4),stride=low?2:1;
     const scene=new THREE.Scene();scene.background=new THREE.Color(0x071019);scene.fog=new THREE.FogExp2(0x071019,.00185);
     const camera=new THREE.PerspectiveCamera(45,innerWidth/innerHeight,.1,650);
@@ -73,8 +86,8 @@
     scene.add(new THREE.HemisphereLight(0xc6ddff,0x172013,1.35));const sun=new THREE.DirectionalLight(0xfff1d2,2.1);sun.position.set(-90,150,65);sun.castShadow=!low;scene.add(sun);
     const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),circ=(a,b)=>{const h=((a-b)**2)/((a+b)**2);return Math.PI*(a+b)*(1+3*h/(10+Math.sqrt(4-3*h)))};
     const orbit={r:235,t:Math.PI*.25,p:1.05,target:new THREE.Vector3(0,17,0)},defaults={r:235,t:Math.PI*.25,p:1.05,target:new THREE.Vector3(0,17,0)};
-    let seatMode=false,selected=null,marker=null,drag=false,moved=false,sx=0,sy=0,lx=0,ly=0;const seatLook={yaw:0,pitch:-.06};
-    const seatMeshes=[],seatData=new Map(),ray=new THREE.Raycaster(),pointer=new THREE.Vector2();
+    let seatMode=false,selected=null,marker=null,drag=false,moved=false,sx=0,sy=0,lx=0,ly=0,highlightedSection="";const seatLook={yaw:0,pitch:-.06};
+    const seatMeshes=[],seatData=new Map(),sectionIndex=new Map(),ray=new THREE.Raycaster(),pointer=new THREE.Vector2(),highlightColor=new THREE.Color(0x5ed7ff),dimColor=new THREE.Color();
 
     function orbitCam(){if(seatMode)return;orbit.p=clamp(orbit.p,.3,1.43);orbit.r=clamp(orbit.r,145,340);const s=Math.sin(orbit.p);camera.position.set(orbit.target.x+orbit.r*s*Math.sin(orbit.t),orbit.target.y+orbit.r*Math.cos(orbit.p),orbit.target.z+orbit.r*s*Math.cos(orbit.t));camera.lookAt(orbit.target)}
     function seatCam(){if(!seatMode)return;const d=new THREE.Vector3(Math.sin(seatLook.yaw)*Math.cos(seatLook.pitch),Math.sin(seatLook.pitch),Math.cos(seatLook.yaw)*Math.cos(seatLook.pitch));camera.lookAt(camera.position.clone().add(d))}
@@ -91,84 +104,53 @@
       for(let i=-7;i<=7;i+=2){const x=i*10.4,n=clamp(x/a,-.999,.999),hh=b*Math.sqrt(1-n*n)*.97,m=new THREE.Mesh(new THREE.PlaneGeometry(9.4,hh*2),stripeMat);m.rotation.x=-Math.PI/2;m.position.set(x,.066,0);scene.add(m)}
       const p=new THREE.Mesh(new THREE.PlaneGeometry(CFG.pitch.L,CFG.pitch.W),new THREE.MeshStandardMaterial({color:0xc8a96e,roughness:1}));p.rotation.x=-Math.PI/2;p.position.y=.086;scene.add(p);
       const white=new THREE.MeshBasicMaterial({color:0xf4f1e9});
-      [-1,1].forEach(s=>{const x=s*(CFG.pitch.L/2-1.22),crease=new THREE.Mesh(new THREE.PlaneGeometry(.045,4.9),white);crease.rotation.x=-Math.PI/2;crease.position.set(x,.095,0);scene.add(crease);
-        const wm=new THREE.MeshStandardMaterial({color:0xf4e9c6,roughness:.75}),g=new THREE.Group();[-.114,0,.114].forEach(z=>{const st=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.71,7),wm);st.position.set(0,.355,z);g.add(st)});g.position.set(s*CFG.pitch.L/2,.09,0);scene.add(g)});
+      [-1,1].forEach(s=>{const x=s*(CFG.pitch.L/2-1.22),crease=new THREE.Mesh(new THREE.PlaneGeometry(.045,4.9),white);crease.rotation.x=-Math.PI/2;crease.position.set(x,.095,0);scene.add(crease);const wm=new THREE.MeshStandardMaterial({color:0xf4e9c6,roughness:.75}),g=new THREE.Group();[-.114,0,.114].forEach(z=>{const st=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.71,7),wm);st.position.set(0,.355,z);g.add(st)});g.position.set(s*CFG.pitch.L/2,.09,0);scene.add(g)});
       const pts=[];for(let i=0;i<=256;i++){const t=i/256*Math.PI*2;pts.push(new THREE.Vector3(Math.cos(t)*(CFG.field.L/2-2.2),.12,Math.sin(t)*(CFG.field.W/2-2.2)))}scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xf5f1e8})));
       [-1,1].forEach(s=>{const m=new THREE.Mesh(new THREE.BoxGeometry(.45,7.5,17),new THREE.MeshStandardMaterial({color:0xe6e6df,roughness:.8}));m.position.set(s*84.3,3.75,0);scene.add(m)})
     }
-
-    function bowl(t,color){
-      const orx=t.rx+t.rows*t.depth+1.45,orz=t.rz+t.rows*t.depth+1.45,irx=t.rx-1.35,irz=t.rz-1.35,iy=t.y-.5,oy=t.y+(t.rows-1)*t.rise-.46,N=224,pos=[],idx=[];
-      for(let i=0;i<=N;i++){const a=i/N*Math.PI*2;pos.push(Math.cos(a)*irx,iy,Math.sin(a)*irz,Math.cos(a)*orx,oy,Math.sin(a)*orz)}
-      for(let i=0;i<N;i++){const a=i*2,b=a+1,c=a+2,d=a+3;idx.push(a,b,d,a,d,c)}
-      const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color,roughness:.94,side:THREE.DoubleSide}));m.receiveShadow=true;scene.add(m);
-      flat(ring(orx+1.5,orz+1.5,orx-.55,orz-.55),t.id==="L"?0xd1c8b7:0x202b36,oy-.12,{roughness:.88});
-      return{orx,orz,top:oy}
-    }
-    function colorFor(t,a,row,sec){
-      const y=row/Math.max(1,t.rows-1),u=((a/(Math.PI*2)%1)+1)%1;
-      if(t.id==="L"){
-        const band=(sec+Math.floor(row/6))%4,light=Math.sin(a*6.2+row*.16)>.88;
-        return light?t.pal[4]:t.pal[band];
-      }
-      const repeats=8,phase=(u*repeats)%1,arm=Math.abs(phase-.5),target=.08+y*.34,delta=Math.abs(arm-target);
-      if(delta<.018)return t.pal[4];
-      if(delta<.062)return y>.78?t.pal[3]:t.pal[2];
-      return ((sec+Math.floor(row/5))&1)?t.pal[0]:t.pal[1]
-    }
-    function blockedSeat(t,r,local,sec){
-      if(Math.min(local,1-local)<t.aisle)return true;
-      const tunnel=sec%t.tunnelEvery===1&&r>=t.tunnelRow&&r<t.tunnelRow+t.tunnelRows&&Math.abs(local-.5)<.19;
-      return tunnel
-    }
+    function bowl(t,color){const orx=t.rx+t.rows*t.depth+1.45,orz=t.rz+t.rows*t.depth+1.45,irx=t.rx-1.35,irz=t.rz-1.35,iy=t.y-.5,oy=t.y+(t.rows-1)*t.rise-.46,N=224,pos=[],idx=[];for(let i=0;i<=N;i++){const a=i/N*Math.PI*2;pos.push(Math.cos(a)*irx,iy,Math.sin(a)*irz,Math.cos(a)*orx,oy,Math.sin(a)*orz)}for(let i=0;i<N;i++){const a=i*2,b=a+1,c=a+2,d=a+3;idx.push(a,b,d,a,d,c)}const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color,roughness:.94,side:THREE.DoubleSide}));m.receiveShadow=true;scene.add(m);flat(ring(orx+1.5,orz+1.5,orx-.55,orz-.55),t.id==="L"?0xd1c8b7:0x202b36,oy-.12,{roughness:.88});return{orx,orz,top:oy}}
+    function colorFor(t,a,row,sec){const y=row/Math.max(1,t.rows-1),u=((a/(Math.PI*2)%1)+1)%1;if(t.id==="L"){const band=(sec+Math.floor(row/6))%4,light=Math.sin(a*6.2+row*.16)>.88;return light?t.pal[4]:t.pal[band]}const repeats=8,phase=(u*repeats)%1,arm=Math.abs(phase-.5),target=.08+y*.34,delta=Math.abs(arm-target);if(delta<.018)return t.pal[4];if(delta<.062)return y>.78?t.pal[3]:t.pal[2];return ((sec+Math.floor(row/5))&1)?t.pal[0]:t.pal[1]}
+    function blockedSeat(t,r,local,sec){if(Math.min(local,1-local)<t.aisle)return true;return sec%t.tunnelEvery===1&&r>=t.tunnelRow&&r<t.tunnelRow+t.tunnelRows&&Math.abs(local-.5)<.19}
     function seats(t){
-      const nominal=[];let rendered=0;
-      for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=Math.max(CFG.sections*8,Math.round(circ(rx,rz)/t.spacing));nominal.push(n);for(let i=0;i<n;i+=stride){const sf=i/n*CFG.sections,sec=Math.floor(sf),local=sf-sec;if(!blockedSeat(t,r,local,sec))rendered++}}
-      const geo=new THREE.BoxGeometry(.43,.27,.41);geo.translate(0,.135,0);const mat=new THREE.MeshStandardMaterial({roughness:.7,metalness:.025,vertexColors:true}),mesh=new THREE.InstancedMesh(geo,mat,rendered),dummy=new THREE.Object3D(),col=new THREE.Color(),meta=new Array(rendered);let k=0;
-      mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);mesh.castShadow=!low;mesh.receiveShadow=true;
-      for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=nominal[r];for(let i=0;i<n;i+=stride){const a=i/n*Math.PI*2,sf=i/n*CFG.sections,sec=Math.floor(sf),local=sf-sec;if(blockedSeat(t,r,local,sec))continue;const x=Math.cos(a)*rx,z=Math.sin(a)*rz,y=t.y+r*t.rise;dummy.position.set(x,y,z);dummy.rotation.set(0,Math.atan2(-x,-z),0);dummy.updateMatrix();mesh.setMatrixAt(k,dummy.matrix);col.set(colorFor(t,a,r,sec));mesh.setColorAt(k,col);const ns=Math.max(1,Math.round(n/CFG.sections));meta[k]={tierId:t.id,tierName:t.name,section:`${t.id}${String(sec+1).padStart(2,"0")}`,row:r+1,seat:Math.min(ns,Math.max(1,Math.floor(local*ns)+1)),position:new THREE.Vector3(x,y,z),angle:a};k++}}
+      const nominal=[];let rendered=0;for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=Math.max(CFG.sections*8,Math.round(circ(rx,rz)/t.spacing));nominal.push(n);for(let i=0;i<n;i+=stride){const sf=i/n*CFG.sections,sec=Math.floor(sf),local=sf-sec;if(!blockedSeat(t,r,local,sec))rendered++}}
+      const geo=new THREE.BoxGeometry(.43,.27,.41);geo.translate(0,.135,0);const mat=new THREE.MeshStandardMaterial({roughness:.7,metalness:.025,vertexColors:true}),mesh=new THREE.InstancedMesh(geo,mat,rendered),dummy=new THREE.Object3D(),col=new THREE.Color(),meta=new Array(rendered);let k=0;mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);mesh.castShadow=!low;mesh.receiveShadow=true;
+      for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=nominal[r];for(let i=0;i<n;i+=stride){const a=i/n*Math.PI*2,sf=i/n*CFG.sections,sec=Math.floor(sf),local=sf-sec;if(blockedSeat(t,r,local,sec))continue;const x=Math.cos(a)*rx,z=Math.sin(a)*rz,y=t.y+r*t.rise;dummy.position.set(x,y,z);dummy.rotation.set(0,Math.atan2(-x,-z),0);dummy.updateMatrix();mesh.setMatrixAt(k,dummy.matrix);col.set(colorFor(t,a,r,sec));mesh.setColorAt(k,col);const ns=Math.max(1,Math.round(n/CFG.sections)),section=`${t.id}${String(sec+1).padStart(2,"0")}`,m={tierId:t.id,tierName:t.name,section,row:r+1,seat:Math.min(ns,Math.max(1,Math.floor(local*ns)+1)),position:new THREE.Vector3(x,y,z),angle:a,baseColor:col.getHex(),mesh,index:k};meta[k]=m;if(!sectionIndex.has(section))sectionIndex.set(section,[]);sectionIndex.get(section).push(m);k++}}
       mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;scene.add(mesh);seatMeshes.push(mesh);seatData.set(mesh.uuid,meta);return rendered
     }
-    function aisles(t){
-      const mat=new THREE.MeshStandardMaterial({color:t.id==="L"?0xbeb8ac:0xaaa99f,roughness:.96});
-      for(let i=0;i<CFG.sections;i++){const a=i/CFG.sections*Math.PI*2,s=ellipsePoint(a,t.rx-.15,t.rz-.15,t.y+.04),e=ellipsePoint(a,t.rx+t.rows*t.depth+.25,t.rz+t.rows*t.depth+.25,t.y+t.rows*t.rise+.04),len=s.distanceTo(e),m=new THREE.Mesh(new THREE.BoxGeometry(.72,.1,len),mat);m.position.copy(s).add(e).multiplyScalar(.5);m.lookAt(e);scene.add(m)}
-    }
-    function vomitories(t){
-      const dark=new THREE.MeshStandardMaterial({color:0x101820,roughness:.95}),edge=new THREE.MeshStandardMaterial({color:0xbdb7aa,roughness:.9});
-      for(let sec=1;sec<CFG.sections;sec+=t.tunnelEvery){const a=(sec+.5)/CFG.sections*Math.PI*2,r=t.tunnelRow+Math.floor(t.tunnelRows*.45),rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,y=t.y+r*t.rise+1.15;
-        const portal=new THREE.Mesh(new THREE.BoxGeometry(4.8,2.55,.9),dark);portal.position.set(Math.cos(a)*rx,y,Math.sin(a)*rz);portal.rotation.y=-a+Math.PI/2;scene.add(portal);
-        const lintel=new THREE.Mesh(new THREE.BoxGeometry(5.4,.2,1),edge);lintel.position.copy(portal.position);lintel.position.y+=1.38;lintel.rotation.y=portal.rotation.y;scene.add(lintel)
-      }
-    }
-    function hospitality(){
-      flat(ring(120.2,106.4,115.2,101.4),0x222b33,22.65,{roughness:.86});
-      flat(ring(121.0,107.2,114.8,101.0),0xd0c8b8,25.35,{roughness:.9});
-      const glass=new THREE.MeshStandardMaterial({color:0x8aa9bf,transparent:true,opacity:.26,roughness:.19,metalness:.15}),frame=new THREE.MeshStandardMaterial({color:0x3b454c,roughness:.55,metalness:.45});
-      for(let i=0;i<76;i++){const a=i/76*Math.PI*2,rx=118.25,rz=104.25,p=ellipsePoint(a,rx,rz,24.2),pane=new THREE.Mesh(new THREE.BoxGeometry(3.15,2.6,.16),glass);pane.position.copy(p);pane.rotation.y=-a+Math.PI/2;scene.add(pane);if(i%2===0){const mullion=new THREE.Mesh(new THREE.BoxGeometry(.12,2.7,.22),frame);mullion.position.copy(p);mullion.rotation.y=pane.rotation.y;scene.add(mullion)}}
-      const fascia=new THREE.MeshStandardMaterial({color:0xddd4c2,roughness:.82});beamRing(119.4,105.35,25.6,96,.11,fascia)
-    }
-    function roof(){
-      loadtext.textContent="Adding cable roof, LED ring and stadium displays…";
-      flat(ring(154.5,140.5,123.8,108.5),0xd8d3c7,53.4,{roughness:.78});
-      const steel=new THREE.MeshStandardMaterial({color:0xaab2b7,roughness:.35,metalness:.72}),cable=new THREE.MeshStandardMaterial({color:0xc8cdd0,roughness:.45,metalness:.62}),mast=new THREE.MeshStandardMaterial({color:0x929ca2,roughness:.4,metalness:.7}),lamp=new THREE.MeshBasicMaterial({color:0xfff2d2});
-      beamRing(151.5,137.5,53.1,96,.19,steel);beamRing(124.4,109.1,52.55,96,.13,cable);
-      for(let i=0;i<96;i++){const a=i/96*Math.PI*2,inner=ellipsePoint(a,124.4,109.1,52.55),outer=ellipsePoint(a,151.5,137.5,53.1);beam(inner,outer,.055,cable,5);if(i%2===0){const top=ellipsePoint(a,151.9,137.9,53.2),base=ellipsePoint(a,151.9,137.9,45.0);beam(base,top,.115,mast,7)}if(i%2===0){const l=new THREE.Mesh(new THREE.BoxGeometry(2.05,.18,.44),lamp);l.position.copy(ellipsePoint(a,123.2,107.9,51.98));l.rotation.y=-a+Math.PI/2;scene.add(l)}}
-      const c=document.createElement("canvas");c.width=1024;c.height=512;const x=c.getContext("2d");x.fillStyle="#071019";x.fillRect(0,0,1024,512);x.fillStyle="#f47a2a";x.fillRect(0,0,1024,36);x.fillStyle="#f7f3ea";x.textAlign="center";x.font="800 70px Arial";x.fillText("AHMEDABAD",512,224);x.fillStyle="#aeb9c5";x.font="600 29px Arial";x.fillText("NARENDRA MODI STADIUM · MOTERA 3D",512,290);const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
-      [-1,1].forEach(s=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(27,13.5),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));m.position.set(0,29.5,s*108.2);m.rotation.y=s<0?0:Math.PI;scene.add(m)})
-    }
-    function extras(){
-      flat(ring(162,147,149,134),0x18222c,.02);flat(ring(149,134,146.4,131.4),0x28343d,1.45,{roughness:.96});
-      const entryMat=new THREE.MeshStandardMaterial({color:0x273541,roughness:.8});for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){const m=new THREE.Mesh(new THREE.BoxGeometry(18,5.1,4.4),entryMat);m.position.set(Math.cos(a)*156.2,2.55,Math.sin(a)*141.2);m.rotation.y=-a;scene.add(m)}
-      marker=new THREE.Mesh(new THREE.TorusGeometry(.52,.09,8,24),new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false}));marker.rotation.x=Math.PI/2;marker.visible=false;marker.renderOrder=999;scene.add(marker)
-    }
-    function build(){extras();ground();loadtext.textContent="Calibrating orange lower bowl…";bowl(CFG.tiers[0],0x373a3b);const a=seats(CFG.tiers[0]);aisles(CFG.tiers[0]);vomitories(CFG.tiers[0]);loadtext.textContent="Building concourse and hospitality band…";hospitality();loadtext.textContent="Calibrating blue upper bowl…";bowl(CFG.tiers[1],0x30353b);const b=seats(CFG.tiers[1]);aisles(CFG.tiers[1]);vomitories(CFG.tiers[1]);roof();loadtext.textContent=`Ready · ${(a+b).toLocaleString()} interactive seat instances`;setTimeout(()=>loading.classList.add("done"),160)}
+    function aisles(t){const mat=new THREE.MeshStandardMaterial({color:t.id==="L"?0xbeb8ac:0xaaa99f,roughness:.96});for(let i=0;i<CFG.sections;i++){const a=i/CFG.sections*Math.PI*2,s=ellipsePoint(a,t.rx-.15,t.rz-.15,t.y+.04),e=ellipsePoint(a,t.rx+t.rows*t.depth+.25,t.rz+t.rows*t.depth+.25,t.y+t.rows*t.rise+.04),len=s.distanceTo(e),m=new THREE.Mesh(new THREE.BoxGeometry(.72,.1,len),mat);m.position.copy(s).add(e).multiplyScalar(.5);m.lookAt(e);scene.add(m)}}
+    function vomitories(t){const dark=new THREE.MeshStandardMaterial({color:0x101820,roughness:.95}),edge=new THREE.MeshStandardMaterial({color:0xbdb7aa,roughness:.9});for(let sec=1;sec<CFG.sections;sec+=t.tunnelEvery){const a=(sec+.5)/CFG.sections*Math.PI*2,r=t.tunnelRow+Math.floor(t.tunnelRows*.45),rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,y=t.y+r*t.rise+1.15;const portal=new THREE.Mesh(new THREE.BoxGeometry(4.8,2.55,.9),dark);portal.position.set(Math.cos(a)*rx,y,Math.sin(a)*rz);portal.rotation.y=-a+Math.PI/2;scene.add(portal);const lintel=new THREE.Mesh(new THREE.BoxGeometry(5.4,.2,1),edge);lintel.position.copy(portal.position);lintel.position.y+=1.38;lintel.rotation.y=portal.rotation.y;scene.add(lintel)}}
+    function hospitality(){flat(ring(120.2,106.4,115.2,101.4),0x222b33,22.65,{roughness:.86});flat(ring(121.0,107.2,114.8,101.0),0xd0c8b8,25.35,{roughness:.9});const glass=new THREE.MeshStandardMaterial({color:0x8aa9bf,transparent:true,opacity:.26,roughness:.19,metalness:.15}),frame=new THREE.MeshStandardMaterial({color:0x3b454c,roughness:.55,metalness:.45});for(let i=0;i<76;i++){const a=i/76*Math.PI*2,rx=118.25,rz=104.25,p=ellipsePoint(a,rx,rz,24.2),pane=new THREE.Mesh(new THREE.BoxGeometry(3.15,2.6,.16),glass);pane.position.copy(p);pane.rotation.y=-a+Math.PI/2;scene.add(pane);if(i%2===0){const mullion=new THREE.Mesh(new THREE.BoxGeometry(.12,2.7,.22),frame);mullion.position.copy(p);mullion.rotation.y=pane.rotation.y;scene.add(mullion)}}const fascia=new THREE.MeshStandardMaterial({color:0xddd4c2,roughness:.82});beamRing(119.4,105.35,25.6,96,.11,fascia)}
+    function roof(){loadtext.textContent="Adding cable roof, LED ring and stadium displays…";flat(ring(154.5,140.5,123.8,108.5),0xd8d3c7,53.4,{roughness:.78});const steel=new THREE.MeshStandardMaterial({color:0xaab2b7,roughness:.35,metalness:.72}),cable=new THREE.MeshStandardMaterial({color:0xc8cdd0,roughness:.45,metalness:.62}),mast=new THREE.MeshStandardMaterial({color:0x929ca2,roughness:.4,metalness:.7}),lamp=new THREE.MeshBasicMaterial({color:0xfff2d2});beamRing(151.5,137.5,53.1,96,.19,steel);beamRing(124.4,109.1,52.55,96,.13,cable);for(let i=0;i<96;i++){const a=i/96*Math.PI*2,inner=ellipsePoint(a,124.4,109.1,52.55),outer=ellipsePoint(a,151.5,137.5,53.1);beam(inner,outer,.055,cable,5);if(i%2===0){const top=ellipsePoint(a,151.9,137.9,53.2),base=ellipsePoint(a,151.9,137.9,45);beam(base,top,.115,mast,7)}if(i%2===0){const l=new THREE.Mesh(new THREE.BoxGeometry(2.05,.18,.44),lamp);l.position.copy(ellipsePoint(a,123.2,107.9,51.98));l.rotation.y=-a+Math.PI/2;scene.add(l)}}const c=document.createElement("canvas");c.width=1024;c.height=512;const x=c.getContext("2d");x.fillStyle="#071019";x.fillRect(0,0,1024,512);x.fillStyle="#f47a2a";x.fillRect(0,0,1024,36);x.fillStyle="#f7f3ea";x.textAlign="center";x.font="800 70px Arial";x.fillText("AHMEDABAD",512,224);x.fillStyle="#aeb9c5";x.font="600 29px Arial";x.fillText("NARENDRA MODI STADIUM · MOTERA 3D",512,290);const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;[-1,1].forEach(s=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(27,13.5),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));m.position.set(0,29.5,s*108.2);m.rotation.y=s<0?0:Math.PI;scene.add(m)})}
+    function extras(){flat(ring(162,147,149,134),0x18222c,.02);flat(ring(149,134,146.4,131.4),0x28343d,1.45,{roughness:.96});const entryMat=new THREE.MeshStandardMaterial({color:0x273541,roughness:.8});for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){const m=new THREE.Mesh(new THREE.BoxGeometry(18,5.1,4.4),entryMat);m.position.set(Math.cos(a)*156.2,2.55,Math.sin(a)*141.2);m.rotation.y=-a;scene.add(m)}marker=new THREE.Mesh(new THREE.TorusGeometry(.52,.09,8,24),new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false}));marker.rotation.x=Math.PI/2;marker.visible=false;marker.renderOrder=999;scene.add(marker)}
 
-    function select(m){selected=m;ui.tier.textContent=m.tierName;ui.title.textContent=`Section ${m.section}`;ui.sub.textContent="Generated prototype seat · approximate sightline, not an official ticket location.";ui.sec.textContent=m.section;ui.row.textContent=String(m.row).padStart(2,"0");ui.seat.textContent=String(m.seat).padStart(2,"0");ui.view.disabled=false;if(marker){marker.visible=true;marker.position.copy(m.position);marker.position.y+=.68}}
+    function populateNavigator(){
+      ui.navSection.innerHTML='<option value="">Choose</option>';for(const t of CFG.tiers){const group=document.createElement("optgroup");group.label=t.name;for(let i=1;i<=CFG.sections;i++){const key=`${t.id}${String(i).padStart(2,"0")}`;if(sectionIndex.has(key)){const o=document.createElement("option");o.value=key;o.textContent=key;group.appendChild(o)}}ui.navSection.appendChild(group)}
+      ui.navRow.disabled=true;ui.navSeat.disabled=true;ui.sectionState.textContent="Choose a section to highlight it in 3D";
+    }
+    function restoreSeatColors(){for(const mesh of seatMeshes){const d=seatData.get(mesh.uuid);if(!d)continue;for(let i=0;i<d.length;i++){const m=d[i];if(m)mesh.setColorAt(i,dimColor.setHex(m.baseColor))}if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true}}
+    function highlightSection(section,focus=true){
+      highlightedSection=section||"";if(!section){restoreSeatColors();ui.sectionState.textContent="Choose a section to highlight it in 3D";return}
+      const targets=sectionIndex.get(section)||[];if(!targets.length)return;
+      for(const mesh of seatMeshes){const d=seatData.get(mesh.uuid);if(!d)continue;for(let i=0;i<d.length;i++){const m=d[i];if(!m)continue;if(m.section===section)mesh.setColorAt(i,highlightColor);else{dimColor.setHex(m.baseColor).multiplyScalar(.42);mesh.setColorAt(i,dimColor)}}if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true}
+      ui.sectionState.textContent=`${section} highlighted · ${targets.length.toLocaleString()} rendered seats`;
+      if(focus&&!seatMode){let sx=0,sy=0,sz=0,sa=0;for(const m of targets){sx+=m.position.x;sy+=m.position.y;sz+=m.position.z;sa+=m.angle}const n=targets.length,avg=new THREE.Vector3(sx/n,sy/n,sz/n),a=sa/n;orbit.target.set(avg.x*.13,avg.y*.72,avg.z*.13);orbit.t=Math.PI/2-a;orbit.p=1.03;orbit.r=clamp((section[0]==="U"?225:205),145,340);orbitCam()}
+    }
+    function uniqueSorted(items,key){return [...new Set(items.map(m=>m[key]))].sort((a,b)=>a-b)}
+    function populateRows(section,preferred){const items=sectionIndex.get(section)||[],rows=uniqueSorted(items,"row");ui.navRow.innerHTML='<option value="">Row</option>'+rows.map(v=>`<option value="${v}">${String(v).padStart(2,"0")}</option>`).join("");ui.navRow.disabled=!rows.length;ui.navSeat.innerHTML='<option value="">—</option>';ui.navSeat.disabled=true;if(preferred&&rows.includes(preferred)){ui.navRow.value=String(preferred);populateSeats(section,preferred)}}
+    function populateSeats(section,row,preferred){const items=(sectionIndex.get(section)||[]).filter(m=>m.row===Number(row));const seats=uniqueSorted(items,"seat");ui.navSeat.innerHTML='<option value="">Seat</option>'+seats.map(v=>`<option value="${v}">${String(v).padStart(2,"0")}</option>`).join("");ui.navSeat.disabled=!seats.length;if(preferred&&seats.includes(preferred))ui.navSeat.value=String(preferred)}
+    function syncNavigator(m){if(!m)return;ui.navSection.value=m.section;populateRows(m.section,m.row);populateSeats(m.section,m.row,m.seat);ui.navRow.value=String(m.row);ui.navSeat.value=String(m.seat);highlightSection(m.section,false)}
+    function findSeat(section,row,seat){const items=sectionIndex.get(section)||[];return items.find(m=>m.row===Number(row)&&m.seat===Number(seat))||null}
+    function select(m,sync=true){if(!m)return;selected=m;ui.tier.textContent=m.tierName;ui.title.textContent=`Section ${m.section}`;ui.sub.textContent="Generated prototype seat · approximate sightline, not an official ticket location.";ui.sec.textContent=m.section;ui.row.textContent=String(m.row).padStart(2,"0");ui.seat.textContent=String(m.seat).padStart(2,"0");ui.view.disabled=false;if(marker){marker.visible=true;marker.position.copy(m.position);marker.position.y+=.68}if(sync)syncNavigator(m)}
     function randomSeat(){if(!seatMeshes.length)return;const mesh=seatMeshes[Math.floor(Math.random()*seatMeshes.length)],d=seatData.get(mesh.uuid);select(d[Math.floor(Math.random()*d.length)])}
     function pick(x,y){if(seatMode||!seatMeshes.length)return;const r=canvas.getBoundingClientRect();pointer.x=(x-r.left)/r.width*2-1;pointer.y=-(y-r.top)/r.height*2+1;ray.setFromCamera(pointer,camera);const h=ray.intersectObjects(seatMeshes,false)[0];if(h&&typeof h.instanceId==="number"){const d=seatData.get(h.object.uuid),m=d&&d[h.instanceId];if(m)select(m)}}
     function enter(){if(!selected||seatMode)return;seatMode=true;document.body.classList.add("seatmode");canvas.classList.add("seatmode");ui.bar.classList.add("show");ui.label.textContent=`${selected.section} · R${selected.row} · S${selected.seat}`;if(marker)marker.visible=false;const inward=new THREE.Vector3(-selected.position.x,0,-selected.position.z).normalize(),dest=selected.position.clone().add(inward.multiplyScalar(.28));dest.y+=1.28;seatLook.yaw=Math.atan2(-dest.x,-dest.z);seatLook.pitch=-.06;gsap.to(camera.position,{x:dest.x,y:dest.y,z:dest.z,duration:reduced?0:1.15,ease:"power3.inOut",onUpdate:seatCam,onComplete:seatCam})}
     function leave(){if(!seatMode)return;seatMode=false;document.body.classList.remove("seatmode");canvas.classList.remove("seatmode");ui.bar.classList.remove("show");if(marker&&selected)marker.visible=true;const s=Math.sin(orbit.p),d=new THREE.Vector3(orbit.target.x+orbit.r*s*Math.sin(orbit.t),orbit.target.y+orbit.r*Math.cos(orbit.p),orbit.target.z+orbit.r*s*Math.cos(orbit.t));gsap.to(camera.position,{x:d.x,y:d.y,z:d.z,duration:reduced?0:.9,ease:"power2.inOut",onUpdate:()=>camera.lookAt(orbit.target),onComplete:orbitCam})}
-    function reset(){if(seatMode)leave();orbit.r=defaults.r;orbit.t=defaults.t;orbit.p=defaults.p;orbit.target.copy(defaults.target);orbitCam()}
+    function reset(){if(seatMode)leave();orbit.r=defaults.r;orbit.t=defaults.t;orbit.p=defaults.p;orbit.target.copy(defaults.target);orbitCam();if(highlightedSection)highlightSection(highlightedSection,false)}
+    function build(){extras();ground();loadtext.textContent="Calibrating orange lower bowl…";bowl(CFG.tiers[0],0x373a3b);const a=seats(CFG.tiers[0]);aisles(CFG.tiers[0]);vomitories(CFG.tiers[0]);loadtext.textContent="Building concourse and hospitality band…";hospitality();loadtext.textContent="Calibrating blue upper bowl…";bowl(CFG.tiers[1],0x30353b);const b=seats(CFG.tiers[1]);aisles(CFG.tiers[1]);vomitories(CFG.tiers[1]);roof();populateNavigator();loadtext.textContent=`Ready · ${(a+b).toLocaleString()} interactive seat instances`;setTimeout(()=>loading.classList.add("done"),160)}
+
+    ui.navSection.addEventListener("change",()=>{const section=ui.navSection.value;selected=null;ui.view.disabled=true;ui.sec.textContent=section||"—";ui.row.textContent="—";ui.seat.textContent="—";marker.visible=false;populateRows(section);if(section){const items=sectionIndex.get(section)||[];ui.tier.textContent=items[0]?.tierName||"Section";ui.title.textContent=`Section ${section}`;ui.sub.textContent="Highlighted generated section. Choose a row, then a rendered seat.";highlightSection(section,true)}else{ui.tier.textContent="Select a seat";ui.title.textContent="Choose any visible seat";ui.sub.textContent="Click a rendered seat, use Random, or navigate by generated section, row and seat below.";highlightSection("",false)}});
+    ui.navRow.addEventListener("change",()=>{const section=ui.navSection.value,row=Number(ui.navRow.value);ui.row.textContent=row?String(row).padStart(2,"0"):"—";ui.seat.textContent="—";selected=null;ui.view.disabled=true;marker.visible=false;populateSeats(section,row)});
+    ui.navSeat.addEventListener("change",()=>{const m=findSeat(ui.navSection.value,ui.navRow.value,ui.navSeat.value);if(m)select(m,false)});
 
     canvas.addEventListener("pointerdown",e=>{drag=true;moved=false;sx=lx=e.clientX;sy=ly=e.clientY;canvas.classList.add("drag");canvas.setPointerCapture?.(e.pointerId)});
     canvas.addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-lx,dy=e.clientY-ly;if(Math.hypot(e.clientX-sx,e.clientY-sy)>5)moved=true;if(seatMode){seatLook.yaw-=dx*.0042;seatLook.pitch=clamp(seatLook.pitch+dy*.0035,-.75,.65);seatCam()}else{orbit.t-=dx*.0042;orbit.p=clamp(orbit.p+dy*.0038,.3,1.43);orbitCam()}lx=e.clientX;ly=e.clientY});
