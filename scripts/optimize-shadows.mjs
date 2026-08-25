@@ -7,7 +7,7 @@ let html = await readFile(outputPath, "utf8");
 
 function replaceExact(before, after, label) {
   if (!html.includes(before)) {
-    throw new Error(`Phase-6/7 patch target missing (${label}): ${before.slice(0, 180)}…`);
+    throw new Error(`Phase-6/7/8 patch target missing (${label}): ${before.slice(0, 180)}…`);
   }
   html = html.replace(before, after);
 }
@@ -45,7 +45,7 @@ const protectedRequired = [
   '<button id="back">Back to stadium</button>'
 ];
 for (const required of protectedRequired) {
-  if (!html.includes(required)) throw new Error(`Phase-6/7 protected invariant missing: ${required}`);
+  if (!html.includes(required)) throw new Error(`Phase-6/7/8 protected invariant missing: ${required}`);
 }
 
 // Phase 6: static, device-tiered structural shadows.
@@ -139,6 +139,83 @@ replaceExact(
   'reusable close-range chair geometry/materials'
 );
 
+// Phase 8: polish existing stadium surfaces without changing geometry or adding expensive PBR features.
+replaceExact(
+  'new THREE.MeshStandardMaterial({color,roughness:.94,side:THREE.DoubleSide})',
+  'new THREE.MeshStandardMaterial({color,roughness:.86,metalness:.015,side:THREE.DoubleSide,dithering:true})',
+  'bowl concrete material'
+);
+replaceExact(
+  'oy-.12,{roughness:.88}',
+  'oy-.12,{roughness:.82,metalness:.01}',
+  'upper concourse ring material'
+);
+replaceExact(
+  'new THREE.MeshStandardMaterial({color:t.id==="L"?0xbeb8ac:0xaaa99f,roughness:.96})',
+  'new THREE.MeshStandardMaterial({color:t.id==="L"?0xbeb8ac:0xaaa99f,roughness:.88,metalness:.01,dithering:true})',
+  'aisle concrete material'
+);
+replaceExact(
+  'new THREE.MeshStandardMaterial({color:0xc5c9ca,roughness:.35,metalness:.68})',
+  'new THREE.MeshStandardMaterial({color:0xc5c9ca,roughness:.42,metalness:.56,dithering:true})',
+  'railing metal material'
+);
+replaceExact(
+  'new THREE.MeshStandardMaterial({color:0x101820,roughness:.95}),edge=new THREE.MeshStandardMaterial({color:0xbdb7aa,roughness:.9})',
+  'new THREE.MeshStandardMaterial({color:0x101820,roughness:.88,metalness:.02,dithering:true}),edge=new THREE.MeshStandardMaterial({color:0xbdb7aa,roughness:.78,metalness:.06,dithering:true})',
+  'vomitory material balance'
+);
+replaceExact(
+  'flat(ring(120.2,106.4,115.2,101.4),0x222b33,22.65,{roughness:.86});flat(ring(121,107.2,114.8,101),0xd0c8b8,25.35,{roughness:.9});',
+  'flat(ring(120.2,106.4,115.2,101.4),0x222b33,22.65,{roughness:.82,metalness:.02});flat(ring(121,107.2,114.8,101),0xd0c8b8,25.35,{roughness:.84,metalness:.015});',
+  'hospitality concourse materials'
+);
+replaceExact(
+  'const glass=new THREE.MeshStandardMaterial({color:0x8aa9bf,transparent:true,opacity:.28,roughness:.19,metalness:.15}),frame=new THREE.MeshStandardMaterial({color:0x3b454c,roughness:.55,metalness:.45});',
+  'const glass=new THREE.MeshStandardMaterial({color:0x8aa9bf,transparent:true,opacity:.26,roughness:.26,metalness:.05,depthWrite:false,dithering:true}),frame=new THREE.MeshStandardMaterial({color:0x3b454c,roughness:.48,metalness:.38,dithering:true});',
+  'hospitality glazing and frames'
+);
+replaceExact(
+  'new THREE.MeshStandardMaterial({color:0xddd4c2,roughness:.82})',
+  'new THREE.MeshStandardMaterial({color:0xddd4c2,roughness:.74,metalness:.04,dithering:true})',
+  'hospitality trim material'
+);
+replaceExact(
+  'const glass=new THREE.MeshStandardMaterial({color:0x85a8bd,transparent:true,opacity:.32,roughness:.16,metalness:.18}),dark=new THREE.MeshStandardMaterial({color:0x252e35,roughness:.62,metalness:.3});',
+  'const glass=new THREE.MeshStandardMaterial({color:0x85a8bd,transparent:true,opacity:.27,roughness:.28,metalness:.05,depthWrite:false,dithering:true}),dark=new THREE.MeshStandardMaterial({color:0x252e35,roughness:.55,metalness:.24,dithering:true});',
+  'media glazing and structure'
+);
+replaceExact(
+  'flat(ring(154.5,140.5,123.8,108.5),0xd8d3c7,53.4,{roughness:.78});',
+  'flat(ring(154.5,140.5,123.8,108.5),0xd8d3c7,53.4,{roughness:.72,metalness:.03});',
+  'roof canopy material'
+);
+replaceExact(
+  'const steel=new THREE.MeshStandardMaterial({color:0xaab2b7,roughness:.35,metalness:.72}),cable=new THREE.MeshStandardMaterial({color:0xc8cdd0,roughness:.45,metalness:.62}),mast=new THREE.MeshStandardMaterial({color:0x929ca2,roughness:.4,metalness:.7}),lamp=new THREE.MeshBasicMaterial({color:0xfff2d2});',
+  'const steel=new THREE.MeshStandardMaterial({color:0xaab2b7,roughness:.4,metalness:.58,dithering:true}),cable=new THREE.MeshStandardMaterial({color:0xc8cdd0,roughness:.5,metalness:.48,dithering:true}),mast=new THREE.MeshStandardMaterial({color:0x929ca2,roughness:.44,metalness:.56,dithering:true}),lamp=new THREE.MeshBasicMaterial({color:0xfff2d2,toneMapped:false});',
+  'roof steel cable and mast response'
+);
+replaceExact(
+  'new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide})',
+  'new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,toneMapped:false})',
+  'display screen brightness'
+);
+replaceExact(
+  'const frame=new THREE.MeshStandardMaterial({color:0x303940,roughness:.7}),cloth=new THREE.MeshStandardMaterial({color:0xe8e7de,roughness:.9});',
+  'const frame=new THREE.MeshStandardMaterial({color:0x303940,roughness:.5,metalness:.34,dithering:true}),cloth=new THREE.MeshStandardMaterial({color:0xe8e7de,roughness:.82,metalness:0,dithering:true});',
+  'sight-screen cloth and frame'
+);
+replaceExact(
+  'flat(ring(162,147,149,134),0x18222c,.02);flat(ring(149,134,146.4,131.4),0x28343d,1.45,{roughness:.96});',
+  'flat(ring(162,147,149,134),0x18222c,.02,{roughness:.9,metalness:.015});flat(ring(149,134,146.4,131.4),0x28343d,1.45,{roughness:.86,metalness:.02});',
+  'perimeter concourse materials'
+);
+replaceExact(
+  'const entryMat=new THREE.MeshStandardMaterial({color:0x273541,roughness:.8})',
+  'const entryMat=new THREE.MeshStandardMaterial({color:0x273541,roughness:.7,metalness:.08,dithering:true})',
+  'perimeter entry material'
+);
+
 const required = [
   'const shadowProfile=lowPower||shadowCompact?"off":(shadowMedium?"medium":"high")',
   'shadowProfile==="high"?2048:(shadowProfile==="medium"?1024:0)',
@@ -179,10 +256,22 @@ const required = [
   'new THREE.Mesh(seatDetailAssets.pan,mat)',
   'new THREE.Mesh(seatDetailAssets.back,mat)',
   'new THREE.Mesh(seatDetailAssets.arm,mat)',
-  'const backItems=mobile?items.filter((_,i)=>i%2===0):items'
+  'const backItems=mobile?items.filter((_,i)=>i%2===0):items',
+  'roughness:.86,metalness:.015,side:THREE.DoubleSide,dithering:true',
+  'roughness:.88,metalness:.01,dithering:true',
+  'roughness:.42,metalness:.56,dithering:true',
+  'opacity:.26,roughness:.26,metalness:.05,depthWrite:false,dithering:true',
+  'opacity:.27,roughness:.28,metalness:.05,depthWrite:false,dithering:true',
+  'roughness:.4,metalness:.58,dithering:true',
+  'roughness:.5,metalness:.48,dithering:true',
+  'roughness:.44,metalness:.56,dithering:true',
+  'toneMapped:false',
+  'color:0xe8e7de,roughness:.82,metalness:0,dithering:true',
+  'roughness:.9,metalness:.015',
+  'roughness:.7,metalness:.08,dithering:true'
 ];
 for (const marker of required) {
-  if (!html.includes(marker)) throw new Error(`Phase-6/7 invariant missing: ${marker}`);
+  if (!html.includes(marker)) throw new Error(`Phase-6/7/8 invariant missing: ${marker}`);
 }
 for (const forbidden of [
   'renderer.shadowMap.enabled=!qualityLow',
@@ -194,13 +283,19 @@ for (const forbidden of [
   'new THREE.LineDashedMaterial({color:0xe6eadf',
   'if(!selected||seatMode)return;',
   'new THREE.MeshStandardMaterial({color:m.baseColor,roughness:.64,metalness:.025})',
-  'new THREE.BoxGeometry(.45,.17,.43),mat),back=new THREE.Mesh(new THREE.BoxGeometry(.45,.57,.09)'
+  'new THREE.BoxGeometry(.45,.17,.43),mat),back=new THREE.Mesh(new THREE.BoxGeometry(.45,.57,.09)',
+  'new THREE.MeshPhysicalMaterial',
+  'PMREMGenerator',
+  'CubeTextureLoader',
+  'envMap:',
+  'transmission:',
+  'clearcoat:'
 ]) {
-  if (html.includes(forbidden)) throw new Error(`Phase-6/7 legacy/regression marker still present: ${forbidden}`);
+  if (html.includes(forbidden)) throw new Error(`Phase-6/7/8 legacy/regression marker still present: ${forbidden}`);
 }
 
 await writeFile(outputPath, html, "utf8");
-console.log(`Optimized static stadium shadows (${shadowPolicySummary()}) and seat rendering reuse without changing stadium UX`);
+console.log(`Optimized static stadium shadows (${shadowPolicySummary()}) seat rendering reuse, and stadium material polish without changing stadium UX`);
 
 function shadowPolicySummary() {
   return "phones/low-power off, capable tablets 1024, desktop 2048, static sight-screen/entry casters only";
