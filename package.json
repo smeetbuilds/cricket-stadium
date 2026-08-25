@@ -14,7 +14,7 @@
   },
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "build": "node scripts/build.mjs && node scripts/apply-row-map.mjs",
+    "build": "node scripts/build.mjs && node scripts/apply-row-map.mjs && node scripts/fix-seat-orientation.mjs",
     "preview": "node scripts/serve.mjs --dist",
     "check": "node scripts/check.mjs"
   }
