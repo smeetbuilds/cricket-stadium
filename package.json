@@ -14,7 +14,7 @@
   },
   "scripts": {
     "dev": "node scripts/serve.mjs",
-    "build": "node scripts/build.mjs && node scripts/apply-row-map.mjs && node scripts/fix-seat-orientation.mjs && node scripts/fix-seat-switch.mjs && node scripts/fix-ground-rendering.mjs && node scripts/upgrade-turf-material.mjs && node scripts/refine-cricket-pitch.mjs && node scripts/optimize-shadows.mjs && node scripts/optimize-display.mjs && node scripts/optimize-render-loop.mjs && node scripts/optimize-runtime.mjs && node scripts/validate-ui-ux.mjs",
+    "build": "node scripts/build.mjs && node scripts/apply-row-map.mjs && node scripts/fix-seat-orientation.mjs && node scripts/fix-seat-switch.mjs && node scripts/fix-ground-rendering.mjs && node scripts/upgrade-turf-material.mjs && node scripts/refine-cricket-pitch.mjs && node scripts/optimize-shadows.mjs && node scripts/optimize-display.mjs && node scripts/optimize-render-loop.mjs && node scripts/optimize-runtime.mjs && node scripts/optimize-responsive.mjs && node scripts/validate-ui-ux.mjs && node scripts/validate-responsive.mjs",
     "preview": "node scripts/serve.mjs --dist",
     "check": "node scripts/check.mjs"
   }
