@@ -1,8 +1,8 @@
 # Third party notices
 
-StadiView copyright © 2026 thebuggeddev. Send email to [thebuggeddev@gmail.com](mailto:thebuggeddev@gmail.com).
+Motera 3D is derived from **StadiView**, copyright © 2026 thebuggeddev. The upstream copyright and project-license notices remain in this repository.
 
-StadiView loads the following libraries from cdnjs. They are not relicensed under the StadiView project license and remain subject to their own terms.
+Motera 3D loads the following runtime libraries from cdnjs. They are not relicensed under the project license and remain subject to their own terms.
 
 ## Three.js r128
 
