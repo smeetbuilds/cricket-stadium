@@ -55,7 +55,7 @@ npm run preview
 
 Node.js 18+ is recommended.
 
-The GitHub Actions workflow runs `npm ci`, `npm run check`, `npm run build`, and a local preview smoke test on pushes and pull requests.
+The repository's GitHub Actions workflow is intentionally **manual-only** (`workflow_dispatch`) to avoid consuming Actions minutes on normal pushes. When manually started, it runs `npm ci`, `npm run check`, `npm run build`, and a local preview smoke test. Normal `main` pushes rely on the Vercel production build, whose build command runs the ordered transform pipeline plus the UI/UX, responsive, performance, browser/runtime, and consolidated regression validators.
 
 ## Controls
 
@@ -92,15 +92,18 @@ A true seat-accurate digital twin requires authoritative venue/ticketing data su
 ## Project structure
 
 ```text
-index.html             # Complete browser experience
-public/favicon.svg     # Motera 3D favicon
-scripts/build.mjs      # Zero-dependency static build
-scripts/serve.mjs      # Zero-dependency dev/preview server
-.github/workflows/ci.yml # Continuous validation
-scripts/check.mjs      # Static/procedural regression checks
-LICENSE.md             # Upstream community license
-COMMERCIAL-LICENSE.md  # Upstream commercial-use information
-THIRD_PARTY_NOTICES.md # Third-party notices
+index.html                         # Complete browser experience source
+public/favicon.svg                 # Motera 3D favicon
+scripts/build.mjs                  # Initial static build/compatibility transform
+scripts/build-pipeline.mjs         # Authoritative ordered production build orchestrator
+scripts/pipeline-stages.mjs        # Transform/validator stage manifest
+scripts/validate-*.mjs             # Final UI, responsive, performance, browser and regression guards
+scripts/serve.mjs                  # Zero-dependency dev/preview server
+scripts/check.mjs                  # Source static/procedural regression checks
+.github/workflows/ci.yml           # Manual-only validation workflow
+LICENSE.md                         # Upstream community license
+COMMERCIAL-LICENSE.md              # Upstream commercial-use information
+THIRD_PARTY_NOTICES.md             # Third-party notices
 ```
 
 ## Licensing and attribution
