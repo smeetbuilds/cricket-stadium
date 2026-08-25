@@ -7,7 +7,7 @@ let html = await readFile(outputPath, "utf8");
 
 function replaceExact(before, after, label) {
   if (!html.includes(before)) {
-    throw new Error(`Phase-6 shadow patch target missing (${label}): ${before.slice(0, 180)}…`);
+    throw new Error(`Phase-6/7 patch target missing (${label}): ${before.slice(0, 180)}…`);
   }
   html = html.replace(before, after);
 }
@@ -45,9 +45,10 @@ const protectedRequired = [
   '<button id="back">Back to stadium</button>'
 ];
 for (const required of protectedRequired) {
-  if (!html.includes(required)) throw new Error(`Phase-6 protected invariant missing: ${required}`);
+  if (!html.includes(required)) throw new Error(`Phase-6/7 protected invariant missing: ${required}`);
 }
 
+// Phase 6: static, device-tiered structural shadows.
 replaceExact(
 `    const mobile=matchMedia("(max-width: 820px)").matches;
     const lowPower=(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)||(navigator.deviceMemory&&navigator.deviceMemory<=4);
@@ -90,6 +91,54 @@ replaceExact(
 "single static shadow-map refresh"
 );
 
+// Phase 7: preserve seat identity and transforms while improving material response
+// and eliminating repeated geometry/material allocation during seat-to-seat transitions.
+replaceExact(
+  'const panMat=new THREE.MeshStandardMaterial({roughness:.68,metalness:.02,vertexColors:true}),pan=new THREE.InstancedMesh(panGeo,panMat,items.length),dummy=new THREE.Object3D(),col=new THREE.Color();',
+  'const panMat=new THREE.MeshStandardMaterial({roughness:.6,metalness:.01,vertexColors:true,dithering:true}),pan=new THREE.InstancedMesh(panGeo,panMat,items.length),dummy=new THREE.Object3D(),col=new THREE.Color();',
+  'global seat finish'
+);
+
+replaceExact(
+`    const seatDetailGroup=new THREE.Group();scene.add(seatDetailGroup);`,
+`    const seatDetailGroup=new THREE.Group();scene.add(seatDetailGroup);
+    const seatDetailAssets={
+      pan:new THREE.BoxGeometry(.45,.17,.43),
+      back:new THREE.BoxGeometry(.45,.57,.09),
+      arm:new THREE.BoxGeometry(.055,.12,.35),
+      materials:new Map()
+    };
+    function seatDetailMaterial(color){
+      let mat=seatDetailAssets.materials.get(color);
+      if(!mat){mat=new THREE.MeshStandardMaterial({color,roughness:.58,metalness:.01,dithering:true});seatDetailAssets.materials.set(color,mat)}
+      return mat
+    }`,
+  'shared close-range seat assets'
+);
+
+replaceExact(
+`    function clearSeatDetails(){while(seatDetailGroup.children.length){const g=seatDetailGroup.children[0],geos=new Set(),mats=new Set();g.traverse?.(o=>{if(o.geometry)geos.add(o.geometry);if(o.material)mats.add(o.material)});seatDetailGroup.remove(g);for(const geo of geos)geo.dispose?.();for(const mat of mats)mat.dispose?.()}}
+    function buildSeatDetails(center){
+      clearSeatDetails();const items=(sectionIndex.get(center.section)||[]).filter(m=>Math.abs(m.row-center.row)<=1&&Math.abs(m.seat-center.seat)<=4);
+      for(const m of items){
+        const chair=new THREE.Group(),mat=new THREE.MeshStandardMaterial({color:m.baseColor,roughness:.64,metalness:.025});
+        const pan=new THREE.Mesh(new THREE.BoxGeometry(.45,.17,.43),mat),back=new THREE.Mesh(new THREE.BoxGeometry(.45,.57,.09),mat),armGeo=new THREE.BoxGeometry(.055,.12,.35);
+        pan.position.y=.09;back.position.set(0,.38,-.18);const left=new THREE.Mesh(armGeo,mat),right=new THREE.Mesh(armGeo,mat);left.position.set(-.245,.24,-.02);right.position.set(.245,.24,-.02);
+        chair.add(pan,back,left,right);chair.position.copy(m.position);chair.rotation.y=Math.atan2(-m.position.x,-m.position.z);seatDetailGroup.add(chair)
+      }
+    }`,
+`    function clearSeatDetails(){while(seatDetailGroup.children.length)seatDetailGroup.remove(seatDetailGroup.children[0])}
+    function buildSeatDetails(center){
+      clearSeatDetails();const items=(sectionIndex.get(center.section)||[]).filter(m=>Math.abs(m.row-center.row)<=1&&Math.abs(m.seat-center.seat)<=4);
+      for(const m of items){
+        const chair=new THREE.Group(),mat=seatDetailMaterial(m.baseColor),pan=new THREE.Mesh(seatDetailAssets.pan,mat),back=new THREE.Mesh(seatDetailAssets.back,mat),left=new THREE.Mesh(seatDetailAssets.arm,mat),right=new THREE.Mesh(seatDetailAssets.arm,mat);
+        pan.position.y=.09;back.position.set(0,.38,-.18);left.position.set(-.245,.24,-.02);right.position.set(.245,.24,-.02);
+        chair.add(pan,back,left,right);chair.position.copy(m.position);chair.rotation.y=Math.atan2(-m.position.x,-m.position.z);seatDetailGroup.add(chair)
+      }
+    }`,
+  'reusable close-range chair geometry/materials'
+);
+
 const required = [
   'const shadowProfile=lowPower||shadowCompact?"off":(shadowMedium?"medium":"high")',
   'shadowProfile==="high"?2048:(shadowProfile==="medium"?1024:0)',
@@ -116,10 +165,24 @@ const required = [
   'function moveSeatCameraTo(m,duration=reduced?0:.72)',
   'ray.ray.intersectsSphere(sphere)',
   '@media(max-width:800px)',
-  '@media(max-width:430px)'
+  '@media(max-width:430px)',
+  'roughness:.6,metalness:.01,vertexColors:true,dithering:true',
+  'const seatDetailAssets={',
+  'pan:new THREE.BoxGeometry(.45,.17,.43)',
+  'back:new THREE.BoxGeometry(.45,.57,.09)',
+  'arm:new THREE.BoxGeometry(.055,.12,.35)',
+  'materials:new Map()',
+  'function seatDetailMaterial(color)',
+  'roughness:.58,metalness:.01,dithering:true',
+  'function clearSeatDetails(){while(seatDetailGroup.children.length)seatDetailGroup.remove(seatDetailGroup.children[0])}',
+  'mat=seatDetailMaterial(m.baseColor)',
+  'new THREE.Mesh(seatDetailAssets.pan,mat)',
+  'new THREE.Mesh(seatDetailAssets.back,mat)',
+  'new THREE.Mesh(seatDetailAssets.arm,mat)',
+  'const backItems=mobile?items.filter((_,i)=>i%2===0):items'
 ];
 for (const marker of required) {
-  if (!html.includes(marker)) throw new Error(`Phase-6 invariant missing: ${marker}`);
+  if (!html.includes(marker)) throw new Error(`Phase-6/7 invariant missing: ${marker}`);
 }
 for (const forbidden of [
   'renderer.shadowMap.enabled=!qualityLow',
@@ -129,13 +192,15 @@ for (const forbidden of [
   'back.castShadow=!qualityLow',
   'const stripeMat=',
   'new THREE.LineDashedMaterial({color:0xe6eadf',
-  'if(!selected||seatMode)return;'
+  'if(!selected||seatMode)return;',
+  'new THREE.MeshStandardMaterial({color:m.baseColor,roughness:.64,metalness:.025})',
+  'new THREE.BoxGeometry(.45,.17,.43),mat),back=new THREE.Mesh(new THREE.BoxGeometry(.45,.57,.09)'
 ]) {
-  if (html.includes(forbidden)) throw new Error(`Phase-6 legacy/regression marker still present: ${forbidden}`);
+  if (html.includes(forbidden)) throw new Error(`Phase-6/7 legacy/regression marker still present: ${forbidden}`);
 }
 
 await writeFile(outputPath, html, "utf8");
-console.log(`Optimized static stadium shadows (${shadowPolicySummary()}) without changing stadium UX`);
+console.log(`Optimized static stadium shadows (${shadowPolicySummary()}) and seat rendering reuse without changing stadium UX`);
 
 function shadowPolicySummary() {
   return "phones/low-power off, capable tablets 1024, desktop 2048, static sight-screen/entry casters only";
