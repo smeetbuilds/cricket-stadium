@@ -48,7 +48,7 @@
     <div class="data"><div class="cell"><span>Section</span><b id="sec">—</b></div><div class="cell"><span>Row</span><b id="row">—</b></div><div class="cell"><span>Seat</span><b id="seat">—</b></div></div>
     <div class="actions"><button class="btn" id="view" disabled>View from seat</button><button class="btn alt" id="random">Random</button></div>
   </aside>
-  <aside id="note" class="glass"><b>Accuracy note.</b> Bowl geometry follows public GCA/Populous references. Generated section, row and seat IDs are not the official ticket map.</aside>
+  <aside id="note" class="glass"><b>Accuracy note.</b> Two-tier proportions, roof character and seat-colour motifs are calibrated from public architectural references and interior photography. Generated section, row and seat IDs are not the official ticket map.</aside>
   <div id="tools" class="glass"><button class="tool" id="zin" aria-label="Zoom in">+</button><button class="tool" id="zout" aria-label="Zoom out">−</button><button class="tool" id="reset" aria-label="Reset view">↺</button></div>
   <div id="seatbar" class="glass"><span>Approximate view · <b id="seatlabel"></b> · drag to look</span><button id="back">Back to stadium</button></div>
   <div id="loading"><div class="loader"><div class="ring"></div><b>Building Narendra Modi Stadium</b><span id="loadtext">Preparing cricket ground…</span></div></div>
@@ -61,8 +61,8 @@
     //          https://populous.com/showcases/narendra-modi-stadium
     // Approximate geometry only; generated seat IDs are not official inventory.
     const CFG={capacity:132000,field:{L:180*.9144,W:150*.9144},pitch:{L:22*.9144,W:3.05},sections:48,tiers:[
-      {id:"L",name:"Lower Tier",rows:38,rx:88,rz:74,depth:.82,y:4.2,rise:.42,spacing:.45,pal:["#f16f24","#f58b31","#e95c24","#f5a234"]},
-      {id:"U",name:"Upper Tier",rows:36,rx:122,rz:108,depth:.9,y:27,rise:.53,spacing:.45,pal:["#26366b","#1e2a59","#f17a28","#efad38"]}
+      {id:"L",name:"Lower Tier",rows:35,rx:86.8,rz:72.8,depth:.86,y:3.7,rise:.43,spacing:.47,aisle:.031,tunnelRow:13,tunnelRows:5,tunnelEvery:4,pal:["#ed6726","#f47b2c","#f18e32","#e95a22","#f2a13a"]},
+      {id:"U",name:"Upper Tier",rows:32,rx:118.7,rz:104.7,depth:.88,y:26.4,rise:.57,spacing:.48,aisle:.029,tunnelRow:9,tunnelRows:4,tunnelEvery:4,pal:["#1f2f67","#263b7a","#ef6c28","#f6ad35","#f8c451"]}
     ]};
     const $=id=>document.getElementById(id),canvas=$("c"),loading=$("loading"),loadtext=$("loadtext");
     const ui={tier:$("tier"),title:$("title"),sub:$("sub"),sec:$("sec"),row:$("row"),seat:$("seat"),view:$("view"),bar:$("seatbar"),label:$("seatlabel")};
@@ -80,7 +80,10 @@
     function seatCam(){if(!seatMode)return;const d=new THREE.Vector3(Math.sin(seatLook.yaw)*Math.cos(seatLook.pitch),Math.sin(seatLook.pitch),Math.cos(seatLook.yaw)*Math.cos(seatLook.pitch));camera.lookAt(camera.position.clone().add(d))}
     function ellipse(rx,rz){const s=new THREE.Shape();s.absellipse(0,0,rx,rz,0,Math.PI*2,false,0);return s}
     function ring(orx,orz,irx,irz){const s=ellipse(orx,orz),h=new THREE.Path();h.absellipse(0,0,irx,irz,0,Math.PI*2,true,0);s.holes.push(h);return s}
-    function flat(shape,color,y){const m=new THREE.Mesh(new THREE.ShapeGeometry(shape,160),new THREE.MeshStandardMaterial({color,roughness:.9,side:THREE.DoubleSide}));m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=true;scene.add(m);return m}
+    function flat(shape,color,y,opts={}){const m=new THREE.Mesh(new THREE.ShapeGeometry(shape,192),new THREE.MeshStandardMaterial({color,roughness:opts.roughness??.9,metalness:opts.metalness??0,transparent:!!opts.transparent,opacity:opts.opacity??1,side:THREE.DoubleSide,depthWrite:opts.depthWrite??true}));m.rotation.x=-Math.PI/2;m.position.y=y;m.receiveShadow=opts.receiveShadow??true;scene.add(m);return m}
+    function beam(a,b,r,mat,segments=6){const d=new THREE.Vector3().subVectors(b,a),len=d.length(),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,len,segments),mat);m.position.copy(a).add(b).multiplyScalar(.5);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());scene.add(m);return m}
+    function ellipsePoint(a,rx,rz,y){return new THREE.Vector3(Math.cos(a)*rx,y,Math.sin(a)*rz)}
+    function beamRing(rx,rz,y,count,r,mat){for(let i=0;i<count;i++){const a=i/count*Math.PI*2,b=(i+1)/count*Math.PI*2;beam(ellipsePoint(a,rx,rz,y),ellipsePoint(b,rx,rz,y),r,mat,5)}}
 
     function ground(){
       loadtext.textContent="Laying out cricket oval and wicket…";flat(ellipse(87,72),0x111a21,.01);flat(ellipse(CFG.field.L/2,CFG.field.W/2),0x267a3c,.045);
@@ -95,34 +98,70 @@
     }
 
     function bowl(t,color){
-      const orx=t.rx+t.rows*t.depth+1.6,orz=t.rz+t.rows*t.depth+1.6,irx=t.rx-1.5,irz=t.rz-1.5,iy=t.y-.42,oy=t.y+(t.rows-1)*t.rise-.42,N=192,pos=[],idx=[];
+      const orx=t.rx+t.rows*t.depth+1.45,orz=t.rz+t.rows*t.depth+1.45,irx=t.rx-1.35,irz=t.rz-1.35,iy=t.y-.5,oy=t.y+(t.rows-1)*t.rise-.46,N=224,pos=[],idx=[];
       for(let i=0;i<=N;i++){const a=i/N*Math.PI*2;pos.push(Math.cos(a)*irx,iy,Math.sin(a)*irz,Math.cos(a)*orx,oy,Math.sin(a)*orz)}
       for(let i=0;i<N;i++){const a=i*2,b=a+1,c=a+2,d=a+3;idx.push(a,b,d,a,d,c)}
-      const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color,roughness:.92,side:THREE.DoubleSide}));m.receiveShadow=true;scene.add(m);flat(ring(orx+1.3,orz+1.3,orx-.4,orz-.4),0x151c24,oy-.15);return{orx,orz}
+      const g=new THREE.BufferGeometry();g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({color,roughness:.94,side:THREE.DoubleSide}));m.receiveShadow=true;scene.add(m);
+      flat(ring(orx+1.5,orz+1.5,orx-.55,orz-.55),t.id==="L"?0xd1c8b7:0x202b36,oy-.12,{roughness:.88});
+      return{orx,orz,top:oy}
     }
-    function colorFor(t,a,row,sec){if(t.id==="L"){const accent=Math.sin(a*8+row*.18)>.83||row>t.rows*.68&&sec%6===0;return accent?t.pal[3]:t.pal[(sec+row)%3]}const d=Math.sin(a*10-row*.32);return d>.79?t.pal[2]:d<-.83?t.pal[3]:t.pal[(sec+row)%2]}
+    function colorFor(t,a,row,sec){
+      const y=row/Math.max(1,t.rows-1),u=((a/(Math.PI*2)%1)+1)%1;
+      if(t.id==="L"){
+        const band=(sec+Math.floor(row/6))%4,light=Math.sin(a*6.2+row*.16)>.88;
+        return light?t.pal[4]:t.pal[band];
+      }
+      const repeats=8,phase=(u*repeats)%1,arm=Math.abs(phase-.5),target=.08+y*.34,delta=Math.abs(arm-target);
+      if(delta<.018)return t.pal[4];
+      if(delta<.062)return y>.78?t.pal[3]:t.pal[2];
+      return ((sec+Math.floor(row/5))&1)?t.pal[0]:t.pal[1]
+    }
+    function blockedSeat(t,r,local,sec){
+      if(Math.min(local,1-local)<t.aisle)return true;
+      const tunnel=sec%t.tunnelEvery===1&&r>=t.tunnelRow&&r<t.tunnelRow+t.tunnelRows&&Math.abs(local-.5)<.19;
+      return tunnel
+    }
     function seats(t){
-      const counts=[],nominal=[];let rendered=0;
-      for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=Math.max(CFG.sections*8,Math.round(circ(rx,rz)/t.spacing));nominal.push(n);for(let i=0;i<n;i+=stride){const sf=i/n*CFG.sections,l=sf-Math.floor(sf);if(Math.min(l,1-l)>=.035)rendered++}}
-      const geo=new THREE.BoxGeometry(.42,.26,.4);geo.translate(0,.13,0);const mat=new THREE.MeshStandardMaterial({roughness:.72,metalness:.03,vertexColors:true}),mesh=new THREE.InstancedMesh(geo,mat,rendered),dummy=new THREE.Object3D(),col=new THREE.Color(),meta=new Array(rendered);let k=0;
+      const nominal=[];let rendered=0;
+      for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=Math.max(CFG.sections*8,Math.round(circ(rx,rz)/t.spacing));nominal.push(n);for(let i=0;i<n;i+=stride){const sf=i/n*CFG.sections,sec=Math.floor(sf),local=sf-sec;if(!blockedSeat(t,r,local,sec))rendered++}}
+      const geo=new THREE.BoxGeometry(.43,.27,.41);geo.translate(0,.135,0);const mat=new THREE.MeshStandardMaterial({roughness:.7,metalness:.025,vertexColors:true}),mesh=new THREE.InstancedMesh(geo,mat,rendered),dummy=new THREE.Object3D(),col=new THREE.Color(),meta=new Array(rendered);let k=0;
       mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage);mesh.castShadow=!low;mesh.receiveShadow=true;
-      for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=nominal[r];for(let i=0;i<n;i+=stride){const a=i/n*Math.PI*2,sf=i/n*CFG.sections,sec=Math.floor(sf),local=sf-sec;if(Math.min(local,1-local)<.035)continue;const x=Math.cos(a)*rx,z=Math.sin(a)*rz,y=t.y+r*t.rise;dummy.position.set(x,y,z);dummy.rotation.set(0,Math.atan2(-x,-z),0);dummy.updateMatrix();mesh.setMatrixAt(k,dummy.matrix);col.set(colorFor(t,a,r,sec));mesh.setColorAt(k,col);const ns=Math.max(1,Math.round(n/CFG.sections));meta[k]={tierId:t.id,tierName:t.name,section:`${t.id}${String(sec+1).padStart(2,"0")}`,row:r+1,seat:Math.min(ns,Math.max(1,Math.floor(local*ns)+1)),position:new THREE.Vector3(x,y,z),angle:a};k++}}
+      for(let r=0;r<t.rows;r++){const rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,n=nominal[r];for(let i=0;i<n;i+=stride){const a=i/n*Math.PI*2,sf=i/n*CFG.sections,sec=Math.floor(sf),local=sf-sec;if(blockedSeat(t,r,local,sec))continue;const x=Math.cos(a)*rx,z=Math.sin(a)*rz,y=t.y+r*t.rise;dummy.position.set(x,y,z);dummy.rotation.set(0,Math.atan2(-x,-z),0);dummy.updateMatrix();mesh.setMatrixAt(k,dummy.matrix);col.set(colorFor(t,a,r,sec));mesh.setColorAt(k,col);const ns=Math.max(1,Math.round(n/CFG.sections));meta[k]={tierId:t.id,tierName:t.name,section:`${t.id}${String(sec+1).padStart(2,"0")}`,row:r+1,seat:Math.min(ns,Math.max(1,Math.floor(local*ns)+1)),position:new THREE.Vector3(x,y,z),angle:a};k++}}
       mesh.instanceMatrix.needsUpdate=true;if(mesh.instanceColor)mesh.instanceColor.needsUpdate=true;scene.add(mesh);seatMeshes.push(mesh);seatData.set(mesh.uuid,meta);return rendered
     }
-    function aisles(t){const mat=new THREE.MeshStandardMaterial({color:0xaaa79d,roughness:.92});for(let i=0;i<CFG.sections;i++){const a=i/CFG.sections*Math.PI*2,s=new THREE.Vector3(Math.cos(a)*(t.rx-.2),t.y+.08,Math.sin(a)*(t.rz-.2)),e=new THREE.Vector3(Math.cos(a)*(t.rx+t.rows*t.depth+.4),t.y+t.rows*t.rise+.08,Math.sin(a)*(t.rz+t.rows*t.depth+.4)),len=s.distanceTo(e),m=new THREE.Mesh(new THREE.BoxGeometry(.65,.12,len),mat);m.position.copy(s).add(e).multiplyScalar(.5);m.lookAt(e);scene.add(m)}}
-    function hospitality(){flat(ring(123,109,116.5,102.5),0x1c2732,24.4);const mat=new THREE.MeshStandardMaterial({color:0x84a2bb,transparent:true,opacity:.22,roughness:.22});for(let i=0;i<48;i++){const a=i/48*Math.PI*2,m=new THREE.Mesh(new THREE.BoxGeometry(4.2,3.1,.18),mat);m.position.set(Math.cos(a)*118.7,25.9,Math.sin(a)*104.7);m.rotation.y=-a;scene.add(m)}}
+    function aisles(t){
+      const mat=new THREE.MeshStandardMaterial({color:t.id==="L"?0xbeb8ac:0xaaa99f,roughness:.96});
+      for(let i=0;i<CFG.sections;i++){const a=i/CFG.sections*Math.PI*2,s=ellipsePoint(a,t.rx-.15,t.rz-.15,t.y+.04),e=ellipsePoint(a,t.rx+t.rows*t.depth+.25,t.rz+t.rows*t.depth+.25,t.y+t.rows*t.rise+.04),len=s.distanceTo(e),m=new THREE.Mesh(new THREE.BoxGeometry(.72,.1,len),mat);m.position.copy(s).add(e).multiplyScalar(.5);m.lookAt(e);scene.add(m)}
+    }
+    function vomitories(t){
+      const dark=new THREE.MeshStandardMaterial({color:0x101820,roughness:.95}),edge=new THREE.MeshStandardMaterial({color:0xbdb7aa,roughness:.9});
+      for(let sec=1;sec<CFG.sections;sec+=t.tunnelEvery){const a=(sec+.5)/CFG.sections*Math.PI*2,r=t.tunnelRow+Math.floor(t.tunnelRows*.45),rx=t.rx+r*t.depth,rz=t.rz+r*t.depth,y=t.y+r*t.rise+1.15;
+        const portal=new THREE.Mesh(new THREE.BoxGeometry(4.8,2.55,.9),dark);portal.position.set(Math.cos(a)*rx,y,Math.sin(a)*rz);portal.rotation.y=-a+Math.PI/2;scene.add(portal);
+        const lintel=new THREE.Mesh(new THREE.BoxGeometry(5.4,.2,1),edge);lintel.position.copy(portal.position);lintel.position.y+=1.38;lintel.rotation.y=portal.rotation.y;scene.add(lintel)
+      }
+    }
+    function hospitality(){
+      flat(ring(120.2,106.4,115.2,101.4),0x222b33,22.65,{roughness:.86});
+      flat(ring(121.0,107.2,114.8,101.0),0xd0c8b8,25.35,{roughness:.9});
+      const glass=new THREE.MeshStandardMaterial({color:0x8aa9bf,transparent:true,opacity:.26,roughness:.19,metalness:.15}),frame=new THREE.MeshStandardMaterial({color:0x3b454c,roughness:.55,metalness:.45});
+      for(let i=0;i<76;i++){const a=i/76*Math.PI*2,rx=118.25,rz=104.25,p=ellipsePoint(a,rx,rz,24.2),pane=new THREE.Mesh(new THREE.BoxGeometry(3.15,2.6,.16),glass);pane.position.copy(p);pane.rotation.y=-a+Math.PI/2;scene.add(pane);if(i%2===0){const mullion=new THREE.Mesh(new THREE.BoxGeometry(.12,2.7,.22),frame);mullion.position.copy(p);mullion.rotation.y=pane.rotation.y;scene.add(mullion)}}
+      const fascia=new THREE.MeshStandardMaterial({color:0xddd4c2,roughness:.82});beamRing(119.4,105.35,25.6,96,.11,fascia)
+    }
     function roof(){
-      loadtext.textContent="Adding roof canopy and stadium displays…";flat(ring(151,137,124,108),0xd9d3bf,52.5);
-      const rail=new THREE.MeshStandardMaterial({color:0xaeb8bf,roughness:.42,metalness:.7}),lamp=new THREE.MeshBasicMaterial({color:0xf8f2dc});
-      for(let i=0;i<64;i++){const a=i/64*Math.PI*2,b=(i+1)/64*Math.PI*2,p1=new THREE.Vector3(Math.cos(a)*148.2,51.8,Math.sin(a)*134.1),p2=new THREE.Vector3(Math.cos(b)*148.2,51.8,Math.sin(b)*134.1),m=new THREE.Mesh(new THREE.BoxGeometry(.18,.18,p1.distanceTo(p2)),rail);m.position.copy(p1).add(p2).multiplyScalar(.5);m.lookAt(p2);scene.add(m);if(i%2===0){const l=new THREE.Mesh(new THREE.BoxGeometry(2,.22,.5),lamp);l.position.set(Math.cos(a)*125.5,51.35,Math.sin(a)*109.8);l.rotation.y=-a;scene.add(l)}}
-      const c=document.createElement("canvas");c.width=1024;c.height=512;const x=c.getContext("2d");x.fillStyle="#071019";x.fillRect(0,0,1024,512);x.fillStyle="#f47a2a";x.fillRect(0,0,1024,34);x.fillStyle="#f7f3ea";x.textAlign="center";x.font="800 72px Arial";x.fillText("AHMEDABAD",512,235);x.fillStyle="#9da9b7";x.font="600 30px Arial";x.fillText("NARENDRA MODI STADIUM · MOTERA 3D",512,298);const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
-      [-1,1].forEach(s=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(25,12.5),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));m.position.set(0,26,s*111);m.rotation.y=s<0?0:Math.PI;scene.add(m)})
+      loadtext.textContent="Adding cable roof, LED ring and stadium displays…";
+      flat(ring(154.5,140.5,123.8,108.5),0xd8d3c7,53.4,{roughness:.78});
+      const steel=new THREE.MeshStandardMaterial({color:0xaab2b7,roughness:.35,metalness:.72}),cable=new THREE.MeshStandardMaterial({color:0xc8cdd0,roughness:.45,metalness:.62}),mast=new THREE.MeshStandardMaterial({color:0x929ca2,roughness:.4,metalness:.7}),lamp=new THREE.MeshBasicMaterial({color:0xfff2d2});
+      beamRing(151.5,137.5,53.1,96,.19,steel);beamRing(124.4,109.1,52.55,96,.13,cable);
+      for(let i=0;i<96;i++){const a=i/96*Math.PI*2,inner=ellipsePoint(a,124.4,109.1,52.55),outer=ellipsePoint(a,151.5,137.5,53.1);beam(inner,outer,.055,cable,5);if(i%2===0){const top=ellipsePoint(a,151.9,137.9,53.2),base=ellipsePoint(a,151.9,137.9,45.0);beam(base,top,.115,mast,7)}if(i%2===0){const l=new THREE.Mesh(new THREE.BoxGeometry(2.05,.18,.44),lamp);l.position.copy(ellipsePoint(a,123.2,107.9,51.98));l.rotation.y=-a+Math.PI/2;scene.add(l)}}
+      const c=document.createElement("canvas");c.width=1024;c.height=512;const x=c.getContext("2d");x.fillStyle="#071019";x.fillRect(0,0,1024,512);x.fillStyle="#f47a2a";x.fillRect(0,0,1024,36);x.fillStyle="#f7f3ea";x.textAlign="center";x.font="800 70px Arial";x.fillText("AHMEDABAD",512,224);x.fillStyle="#aeb9c5";x.font="600 29px Arial";x.fillText("NARENDRA MODI STADIUM · MOTERA 3D",512,290);const tex=new THREE.CanvasTexture(c);tex.encoding=THREE.sRGBEncoding;
+      [-1,1].forEach(s=>{const m=new THREE.Mesh(new THREE.PlaneGeometry(27,13.5),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide}));m.position.set(0,29.5,s*108.2);m.rotation.y=s<0?0:Math.PI;scene.add(m)})
     }
     function extras(){
-      flat(ring(160,145,148,133),0x18222c,.02);for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){const m=new THREE.Mesh(new THREE.BoxGeometry(17,4.5,4),new THREE.MeshStandardMaterial({color:0x273541,roughness:.78}));m.position.set(Math.cos(a)*155,2.25,Math.sin(a)*140);m.rotation.y=-a;scene.add(m)}
+      flat(ring(162,147,149,134),0x18222c,.02);flat(ring(149,134,146.4,131.4),0x28343d,1.45,{roughness:.96});
+      const entryMat=new THREE.MeshStandardMaterial({color:0x273541,roughness:.8});for(const a of [0,Math.PI/2,Math.PI,Math.PI*1.5]){const m=new THREE.Mesh(new THREE.BoxGeometry(18,5.1,4.4),entryMat);m.position.set(Math.cos(a)*156.2,2.55,Math.sin(a)*141.2);m.rotation.y=-a;scene.add(m)}
       marker=new THREE.Mesh(new THREE.TorusGeometry(.52,.09,8,24),new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false}));marker.rotation.x=Math.PI/2;marker.visible=false;marker.renderOrder=999;scene.add(marker)
     }
-    function build(){extras();ground();loadtext.textContent="Generating lower seating bowl…";bowl(CFG.tiers[0],0x343a3e);const a=seats(CFG.tiers[0]);aisles(CFG.tiers[0]);loadtext.textContent="Generating upper seating bowl…";hospitality();bowl(CFG.tiers[1],0x30353b);const b=seats(CFG.tiers[1]);aisles(CFG.tiers[1]);roof();loadtext.textContent=`Ready · ${(a+b).toLocaleString()} interactive seat instances`;setTimeout(()=>loading.classList.add("done"),160)}
+    function build(){extras();ground();loadtext.textContent="Calibrating orange lower bowl…";bowl(CFG.tiers[0],0x373a3b);const a=seats(CFG.tiers[0]);aisles(CFG.tiers[0]);vomitories(CFG.tiers[0]);loadtext.textContent="Building concourse and hospitality band…";hospitality();loadtext.textContent="Calibrating blue upper bowl…";bowl(CFG.tiers[1],0x30353b);const b=seats(CFG.tiers[1]);aisles(CFG.tiers[1]);vomitories(CFG.tiers[1]);roof();loadtext.textContent=`Ready · ${(a+b).toLocaleString()} interactive seat instances`;setTimeout(()=>loading.classList.add("done"),160)}
 
     function select(m){selected=m;ui.tier.textContent=m.tierName;ui.title.textContent=`Section ${m.section}`;ui.sub.textContent="Generated prototype seat · approximate sightline, not an official ticket location.";ui.sec.textContent=m.section;ui.row.textContent=String(m.row).padStart(2,"0");ui.seat.textContent=String(m.seat).padStart(2,"0");ui.view.disabled=false;if(marker){marker.visible=true;marker.position.copy(m.position);marker.position.y+=.68}}
     function randomSeat(){if(!seatMeshes.length)return;const mesh=seatMeshes[Math.floor(Math.random()*seatMeshes.length)],d=seatData.get(mesh.uuid);select(d[Math.floor(Math.random()*d.length)])}
