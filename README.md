@@ -4,18 +4,19 @@
 
 Motera 3D is a noncommercial experimental recreation of Narendra Modi Stadium in Ahmedabad. It generates the cricket ground, two-tier seating bowl, roof structure, hospitality/media bands, aisles, vomitories, railings, and thousands of selectable seat instances in the browser.
 
-> **Accuracy:** This is not an official Gujarat Cricket Association ticket map and does not contain authoritative section, row, seat, pricing, availability, or ticket inventory data. Generated seat IDs are prototype navigation identifiers only.
+> **Accuracy:** This is not an official Gujarat Cricket Association ticket map and does not contain authoritative section, row, seat, pricing, availability, or ticket inventory data. Block/Bay labels are calibrated from the supplied seating reference, row letters are positional mappings, and generated seat identities remain prototype navigation data.
 
 ## Current experience
 
 - Procedural cricket oval based on the publicly stated **180 × 150 yard** field dimensions
 - Two principal seating tiers and an extended-capacity reference of **132,000**
-- Stable generated seat IDs across device classes, with adaptive pixel ratio and close-range seat-back detail LOD
-- Section → Row → Seat navigation backed by the same generated seat metadata as direct 3D picking
-- Interactive 2D minimap synchronized with section highlighting and the selected seat
+- Stable generated internal seat IDs across device classes, with adaptive pixel ratio and close-range seat-back detail LOD
+- Visible **Block → Bay → mapped Row → generated Bay Seat** navigation over the existing 3D bowl
+- Bay-wide navigation indexes all rendered seats that fall inside the chosen Block/Bay, even when a Bay spans multiple internal render sections
+- Interactive 2D reference minimap synchronized with Block/Bay focus, selected seat, and camera orientation
 - Animated approximate first-person seat views with a small high-detail nearby-chair layer (pan, back, and armrests)
-- Direct seat picking, Random Seat, keyboard controls, wheel zoom, drag orbit, and touch pinch-to-zoom
-- Shareable `?seat=` URLs for generated seats
+- Direct seat picking, mapped Random Seat, keyboard controls, wheel zoom, drag orbit, and touch pinch-to-zoom
+- Shareable `?seat=` URLs that preserve the stable internal generated seat identity
 - Procedural roof/cable structure, LED ring, scoreboards, hospitality/media areas, aisles, vomitories, and railings
 - WebGL/library failure fallback
 - Responsive layouts for desktop, tablet, short screens, and mobile
@@ -31,31 +32,31 @@ Those references support broad characteristics such as the field dimensions, two
 
 ## Run locally
 
-This fork uses zero-dependency Node tooling for the local static app.
+The project uses zero npm runtime dependencies for its Node build tooling. The browser runtime currently loads pinned Three.js r128 and GSAP 3.12.5 assets from cdnjs.
+
+Use **Node.js 20.11+**. The repository and manual CI currently run comfortably on Node 22, while Vercel may use a newer compatible release.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open the local URL printed in the terminal.
+`npm run dev` first builds the same production output used by Vercel and then serves `dist/`, so local development no longer serves a different pre-transform application.
 
-Run the repository's zero-dependency static/procedural regression checks:
+Run the full source + production regression chain:
 
 ```bash
 npm run check
 ```
 
-To create a deployable `dist/` folder:
+Create and preview a deployable `dist/` folder directly:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-Node.js 18+ is recommended.
-
-The repository's GitHub Actions workflow is intentionally **manual-only** (`workflow_dispatch`) to avoid consuming Actions minutes on normal pushes. When manually started, it runs `npm ci`, `npm run check`, `npm run build`, and a local preview smoke test. Normal `main` pushes rely on the Vercel production build, whose build command runs the ordered transform pipeline plus the UI/UX, responsive, performance, browser/runtime, and consolidated regression validators.
+The GitHub Actions workflow is intentionally manual-only (`workflow_dispatch`). When started, it runs `npm ci`, `npm run check`, and a local preview smoke test. Normal `main` pushes rely on the Vercel production build, whose build command runs the ordered transform pipeline plus the UI/UX, responsive, performance, browser/runtime, and consolidated regression validators.
 
 ## Controls
 
@@ -64,8 +65,8 @@ The repository's GitHub Actions workflow is intentionally **manual-only** (`work
 | Orbit stadium | Drag |
 | Zoom | Mouse wheel, +/- controls, or two-finger pinch |
 | Select seat | Click/tap a rendered seat |
-| Select section | Navigator or minimap |
-| Enter seat view | “View from seat”, double-click, or Enter |
+| Select seating area | Block/Bay navigator or minimap |
+| Enter seat view | “View from seat”, double-click on a seat, or Enter when focus is outside form controls |
 | Look around from seat | Drag |
 | Leave seat view | Escape or “Back to stadium” |
 | Reset overview | R or reset button |
@@ -73,32 +74,48 @@ The repository's GitHub Actions workflow is intentionally **manual-only** (`work
 
 ## Shareable generated seats
 
-Selecting a generated seat updates the URL:
+Selecting a generated seat updates the URL using the stable internal rendering identity:
 
 ```text
 ?seat=L01-R10-S24
 ```
 
-Opening a valid generated-seat URL restores that seat after the procedural bowl is built. This is a prototype identifier, not an official ticket reference.
+Opening a valid generated-seat URL restores that exact generated chair after the procedural bowl is built. The visible Block/Bay and generated Bay Seat labels are recalculated from that chair's position. The URL is a prototype identifier, not an official ticket reference.
+
+## Seating-map architecture
+
+The project intentionally separates rendering identity from seating-reference metadata:
+
+- `Lxx/Uxx` section IDs remain internal rendering/raycast buckets.
+- Block/Bay metadata is calculated from the chair's physical angle around the existing bowl.
+- A Bay-wide index gathers matching chairs across every internal render section intersecting that Bay.
+- Visible generated Bay Seat numbers are ordered within the selected Bay row while stable URL IDs remain unchanged.
+- Seats outside mapped Block/Bay ranges can still exist for visual continuity but are not used by Random Seat.
+
+This separation prevents seating-reference changes from rebuilding or destabilizing the stadium geometry.
 
 ## Performance strategy
 
-The stadium uses section-level `THREE.InstancedMesh` groups rather than one mesh per chair. Section-level bounding spheres improve frustum rejection and ray-picking locality. On mobile devices, pixel ratio and seat-back detail density are reduced without changing the generated pan-seat ID set. On low-resource devices, backrest instances can be omitted entirely. Seat backrests are hidden at long camera distances and restored at closer ranges or in seat view when available.
+The stadium uses section-level `THREE.InstancedMesh` groups rather than one mesh per chair. Section-level world-space bounding spheres improve ray-picking locality. On mobile devices, pixel ratio and seat-back detail density are reduced without changing the generated pan-seat ID set. On low-resource devices, backrest instances can be omitted entirely. Seat backrests are hidden at long camera distances and restored at closer ranges or in seat view when available.
+
+Rendering is invalidation-driven. The selected-seat marker now pulses for a bounded interval instead of keeping the full WebGL scene in a permanent animation loop.
 
 ## Authoritative seat data
 
-A true seat-accurate digital twin requires authoritative venue/ticketing data such as CAD/BIM geometry plus the real section/row/seat inventory. Until such data is supplied with permission, generated IDs remain approximate and the UI labels them accordingly.
+A true seat-accurate digital twin requires authoritative venue/ticketing data such as CAD/BIM geometry plus the real Block/Bay/Row/Seat inventory. Until such data is supplied with permission, row letters remain positional mappings and visible seat numbers remain generated rather than claimed official.
 
 ## Project structure
 
 ```text
-index.html                         # Complete browser experience source
+index.html                         # Base browser experience before production transforms
 public/favicon.svg                 # Motera 3D favicon
 scripts/build.mjs                  # Initial static build/compatibility transform
 scripts/build-pipeline.mjs         # Authoritative ordered production build orchestrator
 scripts/pipeline-stages.mjs        # Transform/validator stage manifest
+scripts/sanitize-generated-css.mjs # Final CSS sanitation entry point
+scripts/stability-hardening.mjs    # Phase 19 non-visual final output hardening
 scripts/validate-*.mjs             # Final UI, responsive, performance, browser and regression guards
-scripts/serve.mjs                  # Zero-dependency dev/preview server
+scripts/serve.mjs                  # Zero-dependency preview/static server
 scripts/check.mjs                  # Source static/procedural regression checks
 .github/workflows/ci.yml           # Manual-only validation workflow
 LICENSE.md                         # Upstream community license

@@ -10,12 +10,12 @@
   "license": "SEE LICENSE IN LICENSE.md",
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20.11"
   },
   "scripts": {
-    "dev": "node scripts/serve.mjs",
+    "dev": "node scripts/build-pipeline.mjs && node scripts/serve.mjs --dist",
     "build": "node scripts/build-pipeline.mjs",
     "preview": "node scripts/serve.mjs --dist",
-    "check": "node scripts/check.mjs"
+    "check": "node scripts/check.mjs && node scripts/build-pipeline.mjs"
   }
 }

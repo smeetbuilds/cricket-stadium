@@ -1,6 +1,6 @@
 import { createReadStream, statSync } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join, normalize, resolve } from "node:path";
+import { extname, isAbsolute, join, normalize, relative, resolve } from "node:path";
 
 const useDist = process.argv.includes("--dist");
 const root = resolve(import.meta.dirname, useDist ? "../dist" : "..");
@@ -18,29 +18,44 @@ const types = {
 };
 
 function safePath(urlPath) {
-  const raw = decodeURIComponent((urlPath || "/").split("?")[0]);
-  const relative = normalize(raw).replace(/^(\.\.(\/|\\|$))+/, "").replace(/^[/\\]+/, "");
-  return join(root, relative || "index.html");
+  let raw;
+  try {
+    raw = decodeURIComponent((urlPath || "/").split("?")[0]);
+  } catch {
+    return null;
+  }
+  const normalized = normalize(raw).replace(/^[/\\]+/, "");
+  const file = resolve(root, normalized || "index.html");
+  const rel = relative(root, file);
+  if (!rel || rel === ".") return resolve(root, "index.html");
+  if (rel.startsWith("..") || isAbsolute(rel)) return null;
+  return file;
 }
 
 const server = createServer((req, res) => {
-  let file = safePath(req.url);
-  try {
-    if (statSync(file).isDirectory()) file = join(file, "index.html");
-  } catch {
-    file = join(root, "index.html");
-  }
-  if (!file.startsWith(root)) {
-    res.writeHead(403).end("Forbidden");
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.writeHead(405, { "content-type": "text/plain; charset=utf-8", allow: "GET, HEAD" }).end("Method not allowed");
     return;
   }
+
+  let file = safePath(req.url);
+  if (!file) {
+    res.writeHead(400, { "content-type": "text/plain; charset=utf-8" }).end("Bad request");
+    return;
+  }
+
   try {
+    if (statSync(file).isDirectory()) file = join(file, "index.html");
     const stat = statSync(file);
     res.writeHead(200, {
       "content-type": types[extname(file).toLowerCase()] || "application/octet-stream",
       "content-length": stat.size,
       "cache-control": useDist ? "public, max-age=300" : "no-store"
     });
+    if (req.method === "HEAD") {
+      res.end();
+      return;
+    }
     createReadStream(file).pipe(res);
   } catch {
     res.writeHead(404, { "content-type": "text/plain; charset=utf-8" }).end("Not found");

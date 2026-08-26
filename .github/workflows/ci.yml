@@ -18,12 +18,8 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Install
-        run: npm ci
-      - name: Static and procedural checks
+      - name: Static, production, and regression checks
         run: npm run check
-      - name: Build
-        run: npm run build
       - name: Preview smoke test
         run: |
           npm run preview > /tmp/motera-preview.log 2>&1 &

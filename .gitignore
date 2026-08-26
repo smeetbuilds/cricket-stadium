@@ -12,6 +12,17 @@ dist
 dist-ssr
 *.local
 
+# Environment / local deployment state
+.env
+.env.*
+!.env.example
+.vercel/
+
+# Test and coverage output
+coverage/
+playwright-report/
+test-results/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
