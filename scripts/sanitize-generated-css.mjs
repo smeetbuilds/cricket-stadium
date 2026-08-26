@@ -135,7 +135,7 @@ const cameraAlignedMapPick = `    function mapPick(e){
 replaceHardenedSegment('    function mapPick(e){','\n\n    ui.navBlock.addEventListener',cameraAlignedMapPick,'mapPick');
 
 for (const marker of [
-  'const pt=(deg,r)=>{const a=THREE.MathUtils.degToRad(deg),wx=Math.cos(a)*rx*r,wz=Math.sin(a)*ry*r;',
+  'pt=(deg,r)=>{const a=THREE.MathUtils.degToRad(deg),wx=Math.cos(a)*rx*r,wz=Math.sin(a)*ry*r;',
   'x.rotate(orbit.t);x.beginPath();x.ellipse(0,0,rx*.515,ry*.515',
   'const southDeg=centerDeg(SOUTH_PAVILION)',
   'p=pt(actualNavDegFromAngle(selected.angle),t)',
