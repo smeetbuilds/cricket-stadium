@@ -75,4 +75,82 @@ const newShareTail = 'ta.select();document.execCommand("copy");ta.remove();flash
 if (!hardened.includes(oldShareTail)) throw new Error('Phase-19 browser share bridge: share fallback tail missing');
 hardened = hardened.replace(oldShareTail, newShareTail);
 
+function replaceHardenedSegment(startMarker, endMarker, replacement, label) {
+  const start = hardened.indexOf(startMarker);
+  const end = hardened.indexOf(endMarker, start + startMarker.length);
+  if (start < 0 || end < 0) throw new Error(`Phase-20 minimap orientation: ${label} boundary missing`);
+  hardened = hardened.slice(0, start) + replacement + hardened.slice(end);
+}
+
+// The reference seating map now uses the same horizontal camera frame as the
+// 3D overview. Stadium Block/Bay metadata and seat world angles stay unchanged.
+// The map click handler applies the exact inverse affine rotation before doing
+// Block/Bay lookup, so rotating the presentation cannot rename a real location.
+const cameraAlignedMinimap = `    function drawMinimap(){
+      minimapDirty=false;const c=ui.map,x=c.getContext("2d"),w=c.width,h=c.height,cx=w/2,cy=h*.46,rx=w*.43,ry=h*.40,ct=Math.cos(orbit.t),st=Math.sin(orbit.t);
+      x.clearRect(0,0,w,h);x.fillStyle="#08131e";x.fillRect(0,0,w,h);
+      const pt=(deg,r)=>{const a=THREE.MathUtils.degToRad(deg),wx=Math.cos(a)*rx*r,wz=Math.sin(a)*ry*r;return[cx+wx*ct-wz*st,cy+wx*st+wz*ct]},span=e=>((e.end-e.start)+360)%360||360;
+      const sector=(e,r0,r1,fill,stroke="#d9e5ea")=>{const n=Math.max(6,Math.ceil(span(e)/4)),sp=span(e);x.beginPath();for(let i=0;i<=n;i++){const p=pt(e.start+sp*i/n,r1);i?x.lineTo(...p):x.moveTo(...p)}for(let i=n;i>=0;i--){const p=pt(e.start+sp*i/n,r0);x.lineTo(...p)}x.closePath();x.fillStyle=fill;x.fill();x.strokeStyle=stroke;x.lineWidth=1;x.stroke()};
+      const divider=(deg,r0,r1,color="rgba(255,255,255,.82)",width=1)=>{const a=pt(deg,r0),b=pt(deg,r1);x.beginPath();x.moveTo(...a);x.lineTo(...b);x.strokeStyle=color;x.lineWidth=width;x.stroke()};
+      const label=(text,deg,r,size,color="#eef5f7")=>{const p=pt(deg,r);x.fillStyle=color;x.font="800 "+size+"px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText(text,p[0],p[1])},centerDeg=e=>actualWrapDeg(e.start+span(e)/2);
+      for(const e of ACTUAL_LAYOUT.U){sector(e,.77,1,"#9fd8e9","#d7edf4");for(let i=0;i<=e.bays;i++)divider(e.start+span(e)*i/e.bays,.77,1,"rgba(255,255,255,.72)",.85);label(e.short,centerDeg(e),.885,12,"#09202c")}
+      for(const e of ACTUAL_LAYOUT.L){const premium=e.id.startsWith("SP");sector(e,.54,.75,premium?"#e9bb78":"#efa64a","#fff0d6");for(let i=0;i<=e.bays;i++)divider(e.start+span(e)*i/e.bays,.54,.75,"rgba(255,255,255,.76)",.8);label(e.short,centerDeg(e),.645,premium?8:10,"#38230d")}
+      x.save();x.translate(cx,cy);x.rotate(orbit.t);x.beginPath();x.ellipse(0,0,rx*.515,ry*.515,0,0,Math.PI*2);x.fillStyle="#76a85e";x.fill();x.strokeStyle="#dcebd5";x.lineWidth=1.5;x.stroke();x.fillStyle="#d3b477";x.fillRect(-h*.095,-w*.018,h*.19,w*.036);x.restore();
+      const southDeg=centerDeg(SOUTH_PAVILION),box=(deg,r,ww,hh,text,fill)=>{const p=pt(deg,r);x.fillStyle=fill;x.fillRect(p[0]-ww/2,p[1]-hh/2,ww,hh);x.strokeStyle="#c8b7a8";x.strokeRect(p[0]-ww/2,p[1]-hh/2,ww,hh);x.fillStyle="#332b27";x.font="700 "+Math.max(7,w*.020)+"px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText(text,p[0],p[1])};
+      box(southDeg,.56,w*.32,h*.045,"PRESIDENT GALLERY","#eadce8");box(southDeg,.64,w*.42,h*.038,"PRESIDENTIAL SUITES","#efe9e2");box(southDeg,.72,w*.48,h*.038,"PREMIUM SUITES","#eee9df");
+      if(actualSelectedBlock&&actualSelectedBay){const rec=actualEntryById(actualSelectedBlock);if(rec){const e=rec.entry,sp=span(e),bw=sp/e.bays,hi={...e,start:actualWrapDeg(e.start+(actualSelectedBay-1)*bw),end:actualWrapDeg(e.start+actualSelectedBay*bw)};sector(hi,rec.tier==="U"?.77:.54,rec.tier==="U"?1:.75,"rgba(94,215,255,.72)","#ffffff")}}
+      if(selected){const t=selected.tierId==="U"?.885:.645,p=pt(actualNavDegFromAngle(selected.angle),t);x.beginPath();x.arc(p[0],p[1],5,0,Math.PI*2);x.fillStyle="#fff";x.fill();x.strokeStyle="#071019";x.lineWidth=2;x.stroke()}
+      if(!seatMode){x.save();x.translate(cx,cy+ry*.99);x.beginPath();x.moveTo(0,7);x.lineTo(5.5,-5);x.lineTo(-5.5,-5);x.closePath();x.fillStyle="#f7f3ea";x.fill();x.restore()}
+    }
+`;
+replaceHardenedSegment('    function drawMinimap(){','    function mapPick(e){',cameraAlignedMinimap,'drawMinimap');
+
+const cameraAlignedMapPick = `    function mapPick(e){
+      if(seatMode)return;
+      const r=ui.map.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*ui.map.width,py=(e.clientY-r.top)/r.height*ui.map.height;
+      const cx=ui.map.width/2,cy=ui.map.height*.46,rx=ui.map.width*.43,ry=ui.map.height*.40,ox=px-cx,oy=py-cy,ct=Math.cos(orbit.t),st=Math.sin(orbit.t);
+      const wx=ox*ct+oy*st,wz=-ox*st+oy*ct,dx=wx/rx,dy=wz/ry,rho=Math.sqrt(dx*dx+dy*dy);if(rho<.54||rho>1.08)return;
+      const navDeg=actualWrapDeg(THREE.MathUtils.radToDeg(Math.atan2(dy,dx))),tier=rho>.76?"U":"L",entry=actualEntryFor(tier,navDeg);
+      if(!entry)return;
+      if(entry.pavilion){
+        actualSelectedBlock="";actualSelectedBay=0;ui.navBlock.value="";populateActualBays("");ui.navSection.value="";chooseSection("",false);
+        ui.tier.textContent=entry.tierLabel;ui.title.textContent=entry.name;ui.sub.textContent="Dedicated South Pavilion / hospitality reference zone from the supplied seating layout.";
+        ui.sec.textContent=entry.short;ui.sectionState.textContent=entry.name;ui.mapLabel.textContent=entry.name;drawMinimap();return
+      }
+      const bay=actualBayFor(entry,navDeg);focusActualBay(entry.id,bay)
+    }
+`;
+replaceHardenedSegment('    function mapPick(e){','\n\n    ui.navBlock.addEventListener',cameraAlignedMapPick,'mapPick');
+
+for (const marker of [
+  'const pt=(deg,r)=>{const a=THREE.MathUtils.degToRad(deg),wx=Math.cos(a)*rx*r,wz=Math.sin(a)*ry*r;',
+  'x.rotate(orbit.t);x.beginPath();x.ellipse(0,0,rx*.515,ry*.515',
+  'const southDeg=centerDeg(SOUTH_PAVILION)',
+  'p=pt(actualNavDegFromAngle(selected.angle),t)',
+  'const wx=ox*ct+oy*st,wz=-ox*st+oy*ct',
+  'const navDeg=actualWrapDeg(THREE.MathUtils.radToDeg(Math.atan2(dy,dx)))'
+]) {
+  if (!hardened.includes(marker)) throw new Error(`Phase-20 minimap orientation marker missing: ${marker}`);
+}
+
+// Pure-math regression: the map transform and click inverse must round-trip the
+// same stadium point at multiple camera angles. This protects Block names from
+// future display-orientation changes without requiring Three.js during build.
+const wrapDeg = value => ((value % 360) + 360) % 360;
+for (const cameraDeg of [0, 45, 90, 180, 270, 359]) {
+  const t = cameraDeg * Math.PI / 180, ct = Math.cos(t), st = Math.sin(t);
+  for (const worldDeg of [0, 13, 90, 150.3, 184, 217.7, 270, 354.7]) {
+    const a = worldDeg * Math.PI / 180;
+    const worldX = Math.cos(a), worldZ = Math.sin(a);
+    const screenX = worldX * ct - worldZ * st;
+    const screenY = worldX * st + worldZ * ct;
+    const recoveredX = screenX * ct + screenY * st;
+    const recoveredZ = -screenX * st + screenY * ct;
+    const recoveredDeg = wrapDeg(Math.atan2(recoveredZ, recoveredX) * 180 / Math.PI);
+    const delta = Math.abs(((recoveredDeg - worldDeg + 540) % 360) - 180);
+    if (delta > 1e-9) throw new Error(`Phase-20 minimap round-trip regression: camera ${cameraDeg}, world ${worldDeg}, recovered ${recoveredDeg}`);
+  }
+}
+
 await writeFile(outputPath, hardened, 'utf8');
+console.log('Phase 20 synchronized the reference minimap with the 3D camera while preserving stadium Block/Bay world coordinates');
