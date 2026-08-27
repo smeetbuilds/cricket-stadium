@@ -89,30 +89,32 @@ function replaceHardenedSegment(startMarker, endMarker, replacement, label) {
   hardened = hardened.slice(0, start) + replacement + hardened.slice(end);
 }
 
-// The reference seating map now uses the same horizontal camera frame as the
-// 3D overview. Stadium Block/Bay metadata and seat world angles stay unchanged.
-// The map click handler applies the exact inverse affine rotation before doing
-// Block/Bay lookup, so rotating the presentation cannot rename a real location.
+// Phase 22 keeps the proven camera-relative map transform and click inverse but
+// redraws the minimap as a stylized aerial stadium: roof, patterned upper bowl,
+// orange lower bowl, dark green field and integrated pavilion treatment.
 const cameraAlignedMinimap = `    function drawMinimap(){
-      minimapDirty=false;const c=ui.map,x=c.getContext("2d"),w=c.width,h=c.height,cx=w/2,cy=h*.46,rx=w*.43,ry=h*.40,ct=Math.cos(orbit.t),st=Math.sin(orbit.t);
-      x.clearRect(0,0,w,h);x.fillStyle="#08131e";x.fillRect(0,0,w,h);
+      minimapDirty=false;const c=ui.map,x=c.getContext("2d"),w=c.width,h=c.height,cx=w/2,cy=h*.445,rx=w*.455,ry=h*.415,ct=Math.cos(orbit.t),st=Math.sin(orbit.t);
+      x.clearRect(0,0,w,h);x.fillStyle="#07131d";x.fillRect(0,0,w,h);
       const span=e=>((e.end-e.start)+360)%360||360,pt=(deg,r)=>{const a=THREE.MathUtils.degToRad(deg),wx=Math.cos(a)*rx*r,wz=Math.sin(a)*ry*r;return[cx+wx*ct-wz*st,cy+wx*st+wz*ct]},centerDeg=e=>actualWrapDeg(e.start+span(e)/2);
-      const sector=(e,r0,r1,fill,stroke="#d9e5ea",width=1)=>{const n=Math.max(6,Math.ceil(span(e)/4)),sp=span(e);x.beginPath();for(let i=0;i<=n;i++){const p=pt(e.start+sp*i/n,r1);i?x.lineTo(...p):x.moveTo(...p)}for(let i=n;i>=0;i--){const p=pt(e.start+sp*i/n,r0);x.lineTo(...p)}x.closePath();x.fillStyle=fill;x.fill();x.strokeStyle=stroke;x.lineWidth=width;x.stroke()};
-      const divider=(deg,r0,r1,color="rgba(255,255,255,.82)",width=1)=>{const a=pt(deg,r0),b=pt(deg,r1);x.beginPath();x.moveTo(...a);x.lineTo(...b);x.strokeStyle=color;x.lineWidth=width;x.stroke()};
-      const label=(text,deg,r,size,color="#eef5f7")=>{const p=pt(deg,r);x.fillStyle=color;x.font="800 "+size+"px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText(text,p[0],p[1])};
-      const fullRing={start:0,end:359.999},mapLabelFor=e=>e.id==="SPE"?"SP E":e.id==="SPC"?"SP C":e.id==="SPW"?"SP W":e.short;
-      sector(fullRing,.77,1,"#172532","#405462",1);sector(fullRing,.54,.75,"#24313b","#4b5d68",1);
-      for(const e of ACTUAL_LAYOUT.U){sector(e,.77,1,"#9fd8e9","#d7edf4",1);for(let i=0;i<=e.bays;i++)divider(e.start+span(e)*i/e.bays,.77,1,"rgba(255,255,255,.78)",1)}
-      for(const e of ACTUAL_LAYOUT.L){const premium=e.id.startsWith("SP");sector(e,.54,.75,premium?"#e9bb78":"#efa64a","#fff0d6",1);for(let i=0;i<=e.bays;i++)divider(e.start+span(e)*i/e.bays,.54,.75,"rgba(255,255,255,.8)",.95)}
-      sector(SOUTH_PAVILION,.77,1,"#364550","#aebdc6",1.35);
-      if(actualSelectedBlock&&actualSelectedBay){const rec=actualEntryById(actualSelectedBlock);if(rec){const e=rec.entry,sp=span(e),bw=sp/e.bays,hi={...e,start:actualWrapDeg(e.start+(actualSelectedBay-1)*bw),end:actualWrapDeg(e.start+actualSelectedBay*bw)};sector(hi,rec.tier==="U"?.77:.54,rec.tier==="U"?1:.75,"rgba(94,215,255,.68)","#ffffff",2.2);divider(hi.start,rec.tier==="U"?.77:.54,rec.tier==="U"?1:.75,"#ffffff",1.5);divider(hi.end,rec.tier==="U"?.77:.54,rec.tier==="U"?1:.75,"#ffffff",1.5)}}
-      x.save();x.translate(cx,cy);x.rotate(orbit.t);x.beginPath();x.ellipse(0,0,rx*.515,ry*.515,0,0,Math.PI*2);x.fillStyle="#76a85e";x.fill();x.strokeStyle="#dcebd5";x.lineWidth=1.5;x.stroke();x.fillStyle="#d3b477";x.fillRect(-h*.095,-w*.018,h*.19,w*.036);x.restore();
-      for(const e of ACTUAL_LAYOUT.U){const s=span(e);label(mapLabelFor(e),centerDeg(e),.885,s<29?9.5:11,"#09202c")}
-      for(const e of ACTUAL_LAYOUT.L){const premium=e.id.startsWith("SP"),s=span(e);label(mapLabelFor(e),centerDeg(e),.645,premium?7.5:(s<26?8.5:10),"#38230d")}
-      const southDeg=centerDeg(SOUTH_PAVILION),pavilionAnchor=pt(southDeg,.80),pavilionTarget=pt(southDeg,.38),badgeW=Math.min(112,w*.34),badgeH=30,bx=Math.max(badgeW/2+5,Math.min(w-badgeW/2-5,pavilionTarget[0])),by=Math.max(badgeH/2+5,Math.min(h-badgeH/2-5,pavilionTarget[1]));
-      x.beginPath();x.moveTo(...pavilionAnchor);x.lineTo(bx,by);x.strokeStyle="rgba(196,211,220,.68)";x.lineWidth=1;x.stroke();x.fillStyle="rgba(8,19,30,.94)";x.fillRect(bx-badgeW/2,by-badgeH/2,badgeW,badgeH);x.strokeStyle="#8fa5b3";x.lineWidth=1;x.strokeRect(bx-badgeW/2,by-badgeH/2,badgeW,badgeH);x.fillStyle="#f1f5f6";x.font="800 10px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText("SOUTH PAVILION",bx,by-5);x.fillStyle="#aebdca";x.font="700 7px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.fillText("Gallery · Suites",bx,by+7);
-      if(selected){const t=selected.tierId==="U"?.885:.645,p=pt(actualNavDegFromAngle(selected.angle),t);x.beginPath();x.arc(p[0],p[1],6.2,0,Math.PI*2);x.fillStyle="#071019";x.fill();x.strokeStyle="#5ed7ff";x.lineWidth=2.4;x.stroke();x.beginPath();x.arc(p[0],p[1],2.2,0,Math.PI*2);x.fillStyle="#ffffff";x.fill()}
-      if(!seatMode){const vy=h-16;x.fillStyle="rgba(7,16,25,.94)";x.fillRect(cx-20,vy-7,40,15);x.strokeStyle="#5ed7ff";x.lineWidth=1;x.strokeRect(cx-20,vy-7,40,15);x.beginPath();x.moveTo(cx,vy-11);x.lineTo(cx-4.5,vy-5);x.lineTo(cx+4.5,vy-5);x.closePath();x.fillStyle="#5ed7ff";x.fill();x.fillStyle="#f4f8fa";x.font="800 7px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText("VIEW",cx,vy+2)}
+      const sector=(e,r0,r1,fill,stroke="#d9e5ea",width=1)=>{const n=Math.max(8,Math.ceil(span(e)/3)),sp=span(e);x.beginPath();for(let i=0;i<=n;i++){const p=pt(e.start+sp*i/n,r1);i?x.lineTo(...p):x.moveTo(...p)}for(let i=n;i>=0;i--){const p=pt(e.start+sp*i/n,r0);x.lineTo(...p)}x.closePath();x.fillStyle=fill;x.fill();x.strokeStyle=stroke;x.lineWidth=width;x.stroke()};
+      const divider=(deg,r0,r1,color="rgba(255,255,255,.7)",width=1)=>{const a=pt(deg,r0),b=pt(deg,r1);x.beginPath();x.moveTo(...a);x.lineTo(...b);x.strokeStyle=color;x.lineWidth=width;x.stroke()};
+      const label=(text,deg,r,size,color="#eef5f7",outline="rgba(7,19,29,.72)")=>{const p=pt(deg,r);x.font="800 "+size+"px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.lineJoin="round";x.lineWidth=2.4;x.strokeStyle=outline;x.strokeText(text,p[0],p[1]);x.fillStyle=color;x.fillText(text,p[0],p[1])};
+      const wedge=(deg,half,fill)=>{const a=pt(deg-half,.93),b=pt(deg+half,.93),c=pt(deg,.775);x.beginPath();x.moveTo(...a);x.lineTo(...b);x.lineTo(...c);x.closePath();x.fillStyle=fill;x.fill()};
+      const fullRing={start:0,end:359.999},mapLabelFor=e=>e.id==="SPE"?"SP·E":e.id==="SPC"?"SP·C":e.id==="SPW"?"SP·W":e.short;
+      sector(fullRing,.96,1.06,"#f2f0e9","#d8dddc",1.15);for(let i=0;i<48;i++)divider(i/48*360,.965,1.055,"rgba(45,60,69,.25)",.55);
+      sector(fullRing,.945,.96,"#46525a","#66747b",.8);sector(fullRing,.77,.945,"#182b50","#526988",1);sector(fullRing,.75,.77,"#0e1922","#27343d",.8);sector(fullRing,.54,.75,"#57341f","#75513a",1);
+      for(const e of ACTUAL_LAYOUT.U){sector(e,.77,.945,"#263b73","#d0d9e0",1.15);for(let i=1;i<e.bays;i++)divider(e.start+span(e)*i/e.bays,.77,.945,"rgba(222,229,234,.42)",.55);divider(e.start,.77,.945,"rgba(248,249,246,.84)",1.25);divider(e.end,.77,.945,"rgba(248,249,246,.84)",1.25)}
+      for(const e of ACTUAL_LAYOUT.U){const s=span(e),mid=centerDeg(e),half=Math.min(8.5,s*.22);wedge(mid,half,"#e35d24");wedge(mid,Math.max(2.8,half*.43),"#f2a72f")}
+      for(const e of ACTUAL_LAYOUT.L){const premium=e.id.startsWith("SP"),fill=premium?"#dc8d35":"#e85d24";sector(e,.54,.75,fill,"#f6cfad",1.05);for(let i=1;i<e.bays;i++)divider(e.start+span(e)*i/e.bays,.54,.75,"rgba(255,232,205,.46)",.55);divider(e.start,.54,.75,"rgba(255,245,230,.86)",1.25);divider(e.end,.54,.75,"rgba(255,245,230,.86)",1.25)}
+      sector(SOUTH_PAVILION,.77,.945,"#303b45","#9eabb2",1.25);
+      if(actualSelectedBlock&&actualSelectedBay){const rec=actualEntryById(actualSelectedBlock);if(rec){const e=rec.entry,sp=span(e),bw=sp/e.bays,hi={...e,start:actualWrapDeg(e.start+(actualSelectedBay-1)*bw),end:actualWrapDeg(e.start+actualSelectedBay*bw)},r0=rec.tier==="U"?.77:.54,r1=rec.tier==="U"?.945:.75;sector(hi,r0,r1,"rgba(94,215,255,.30)","#ffffff",2.4);divider(hi.start,r0,r1,"#5ed7ff",1.8);divider(hi.end,r0,r1,"#5ed7ff",1.8)}}
+      x.save();x.translate(cx,cy);x.rotate(orbit.t);x.beginPath();x.ellipse(0,0,rx*.515,ry*.515,0,0,Math.PI*2);x.clip();x.fillStyle="#1c5a32";x.fillRect(-rx*.54,-ry*.54,rx*1.08,ry*1.08);for(let i=-5;i<=5;i++){x.fillStyle=i%2?"rgba(255,255,255,.025)":"rgba(0,0,0,.035)";x.fillRect(-rx*.54,i*ry*.105,rx*1.08,ry*.105)}x.fillStyle="#c8a464";x.fillRect(-h*.095,-w*.018,h*.19,w*.036);x.restore();
+      x.beginPath();x.ellipse(cx,cy,rx*.515,ry*.515,orbit.t,0,Math.PI*2);x.strokeStyle="#d8e0d1";x.lineWidth=1.4;x.stroke();
+      for(const e of ACTUAL_LAYOUT.U){const s=span(e);label(mapLabelFor(e),centerDeg(e),.855,s<29?9.5:11,"#f4f5f2")}
+      for(const e of ACTUAL_LAYOUT.L){const premium=e.id.startsWith("SP"),s=span(e);label(mapLabelFor(e),centerDeg(e),.645,premium?6.8:(s<26?8.6:10),"#31190d","rgba(255,233,207,.52)")}
+      const southDeg=centerDeg(SOUTH_PAVILION),pav=pt(southDeg,.855);x.fillStyle="rgba(7,16,25,.82)";x.fillRect(pav[0]-42,pav[1]-12,84,24);x.strokeStyle="#99a9b1";x.lineWidth=.8;x.strokeRect(pav[0]-42,pav[1]-12,84,24);x.fillStyle="#f3f1e9";x.font="800 8px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText("SOUTH PAVILION",pav[0],pav[1]-4);x.fillStyle="#b7c2c8";x.font="700 6px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.fillText("GALLERY · SUITES",pav[0],pav[1]+6);
+      if(selected){const t=selected.tierId==="U"?.855:.645,p=pt(actualNavDegFromAngle(selected.angle),t);x.beginPath();x.arc(p[0],p[1],6.2,0,Math.PI*2);x.fillStyle="#071019";x.fill();x.strokeStyle="#5ed7ff";x.lineWidth=2.4;x.stroke();x.beginPath();x.arc(p[0],p[1],2.2,0,Math.PI*2);x.fillStyle="#ffffff";x.fill()}
+      if(!seatMode){const vy=h-14;x.fillStyle="rgba(7,16,25,.92)";x.fillRect(cx-19,vy-7,38,14);x.strokeStyle="#5ed7ff";x.lineWidth=1;x.strokeRect(cx-19,vy-7,38,14);x.beginPath();x.moveTo(cx,vy-11);x.lineTo(cx-4,vy-5);x.lineTo(cx+4,vy-5);x.closePath();x.fillStyle="#5ed7ff";x.fill();x.fillStyle="#f4f8fa";x.font="800 7px Inter,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";x.textAlign="center";x.textBaseline="middle";x.fillText("VIEW",cx,vy+1)}
     }
 `;
 replaceHardenedSegment('    function drawMinimap(){','    function mapPick(e){',cameraAlignedMinimap,'drawMinimap');
@@ -120,7 +122,7 @@ replaceHardenedSegment('    function drawMinimap(){','    function mapPick(e){',
 const cameraAlignedMapPick = `    function mapPick(e){
       if(seatMode)return;
       const r=ui.map.getBoundingClientRect(),px=(e.clientX-r.left)/r.width*ui.map.width,py=(e.clientY-r.top)/r.height*ui.map.height;
-      const cx=ui.map.width/2,cy=ui.map.height*.46,rx=ui.map.width*.43,ry=ui.map.height*.40,ox=px-cx,oy=py-cy,ct=Math.cos(orbit.t),st=Math.sin(orbit.t);
+      const cx=ui.map.width/2,cy=ui.map.height*.445,rx=ui.map.width*.455,ry=ui.map.height*.415,ox=px-cx,oy=py-cy,ct=Math.cos(orbit.t),st=Math.sin(orbit.t);
       const wx=ox*ct+oy*st,wz=-ox*st+oy*ct,dx=wx/rx,dy=wz/ry,rho=Math.sqrt(dx*dx+dy*dy);if(rho<.54||rho>1.08)return;
       const navDeg=actualWrapDeg(THREE.MathUtils.radToDeg(Math.atan2(dy,dx))),tier=rho>.76?"U":"L",entry=actualEntryFor(tier,navDeg);
       if(!entry)return;
@@ -136,22 +138,25 @@ replaceHardenedSegment('    function mapPick(e){','\n\n    ui.navBlock.addEventL
 
 for (const marker of [
   'pt=(deg,r)=>{const a=THREE.MathUtils.degToRad(deg),wx=Math.cos(a)*rx*r,wz=Math.sin(a)*ry*r;',
-  'x.rotate(orbit.t);x.beginPath();x.ellipse(0,0,rx*.515,ry*.515',
-  'const southDeg=centerDeg(SOUTH_PAVILION)',
+  'sector(fullRing,.96,1.06,"#f2f0e9"',
+  'for(let i=0;i<48;i++)divider(i/48*360,.965,1.055',
+  'const wedge=(deg,half,fill)=>',
+  'sector(SOUTH_PAVILION,.77,.945,"#303b45"',
+  'x.fillStyle="#1c5a32"',
+  'x.fillText("SOUTH PAVILION",pav[0],pav[1]-4)',
+  'x.fillText("GALLERY · SUITES",pav[0],pav[1]+6)',
   'p=pt(actualNavDegFromAngle(selected.angle),t)',
   'const wx=ox*ct+oy*st,wz=-ox*st+oy*ct',
   'const navDeg=actualWrapDeg(THREE.MathUtils.radToDeg(Math.atan2(dy,dx)))',
-  'const fullRing={start:0,end:359.999}',
-  'sector(SOUTH_PAVILION,.77,1,"#364550"',
-  'x.fillText("SOUTH PAVILION",bx,by-5)',
-  'x.fillText("Gallery · Suites",bx,by+7)',
+  'rx=ui.map.width*.455,ry=ui.map.height*.415',
   'x.strokeStyle="#5ed7ff";x.lineWidth=2.4',
-  'x.fillText("VIEW",cx,vy+2)',
+  'x.fillText("VIEW",cx,vy+1)',
   'selected visual-continuity seat'
 ]) {
-  if (!hardened.includes(marker)) throw new Error(`Phase-20/21 minimap marker missing: ${marker}`);
+  if (!hardened.includes(marker)) throw new Error(`Phase-20/22 minimap marker missing: ${marker}`);
 }
-if (hardened.includes('box(southDeg,.56')) throw new Error('Phase-21 minimap polish: legacy floating hospitality bars remain');
+if (hardened.includes('box(southDeg,.56')) throw new Error('Phase-22 minimap aerial redraw: legacy floating hospitality bars remain');
+if (hardened.includes('pavilionTarget=pt(southDeg,.38)')) throw new Error('Phase-22 minimap aerial redraw: legacy field-overlay pavilion callout remains');
 
 // Pure-math regression: the map transform and click inverse must round-trip the
 // same stadium point at multiple camera angles. This protects Block names from
@@ -174,4 +179,5 @@ for (const cameraDeg of [0, 45, 90, 180, 270, 359]) {
 
 await writeFile(outputPath, hardened, 'utf8');
 console.log('Phase 20 synchronized the reference minimap with the 3D camera while preserving stadium Block/Bay world coordinates');
-console.log('Phase 21 polished minimap readability: structural gaps, compact South Pavilion callout, clear selected-seat target and VIEW cue; stadium geometry unchanged');
+console.log('Phase 21 polished minimap readability without changing Block/Bay mapping or stadium geometry');
+console.log('Phase 22 redrew the minimap as a stylized aerial Narendra Modi Stadium view while preserving all interaction and seat-mapping contracts');
