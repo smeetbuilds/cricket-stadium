@@ -35,7 +35,8 @@ const expectedTransforms = [
   'optimize-runtime.mjs',
   'optimize-responsive.mjs',
   'harden-browser-runtime.mjs',
-  'sanitize-generated-css.mjs'
+  'sanitize-generated-css.mjs',
+  'aerial-stadium-style.mjs'
 ];
 const expectedValidators = [
   'validate-ui-ux.mjs',

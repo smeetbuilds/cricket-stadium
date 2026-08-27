@@ -12,7 +12,8 @@ export const TRANSFORM_STAGES = Object.freeze([
   'optimize-runtime.mjs',
   'optimize-responsive.mjs',
   'harden-browser-runtime.mjs',
-  'sanitize-generated-css.mjs'
+  'sanitize-generated-css.mjs',
+  'aerial-stadium-style.mjs'
 ]);
 
 export const VALIDATION_STAGES = Object.freeze([
