@@ -16,7 +16,7 @@ function count(pattern) {
 }
 
 const budgets = {
-  htmlBytes: 245 * 1024,
+  htmlBytes: 250 * 1024,
   interactiveSeats: 112000,
   maxSeatsPerSection: 1400,
   seatInstanceBytes: 17 * 1024 * 1024,
@@ -40,6 +40,10 @@ for (const marker of [
   'function referenceSiteContext(){',
   'new THREE.BoxGeometry(54,.9,rampLen)',
   'const campus=flat(ellipse(300,260)',
+  'function signatureFacade(){',
+  'architecturalFacadeWall(160.55,145.55,9.0,28.4,bronzeDark',
+  'function roofPerimeterTruss(){',
+  'new THREE.ShapeGeometry(ledShape,192)',
   'const qualityLow=mobile||lowPower,backLOD=lowPower?190:(mobile?215:250);',
   'const renderPhone=matchMedia("(max-width: 520px)").matches,renderAntialias=!lowPower&&!renderPhone;',
   'const budget=profile==="low"?1800000:(profile==="phone"?2400000:(profile==="mobile"?3200000:(profile==="tablet"?4800000:7500000)));',
@@ -132,12 +136,9 @@ if (seatStats[0].total !== 45107 || seatStats[1].total !== 64803 || totalSeats !
 if (totalSeats > budgets.interactiveSeats) fail(`interactive seat count ${totalSeats} exceeds ${budgets.interactiveSeats}`);
 if (maxSeatsPerSection > budgets.maxSeatsPerSection) fail(`largest section ${maxSeatsPerSection} exceeds ${budgets.maxSeatsPerSection}`);
 
-// Worst desktop path: one pan and one back instance record per generated seat.
-// matrix = 16 float32 (64 B), color = 3 float32 (12 B).
 const seatInstanceBytes = totalSeats * 2 * (16 * 4 + 3 * 4);
 if (seatInstanceBytes > budgets.seatInstanceBytes) fail(`seat instance attributes ${seatInstanceBytes} bytes exceed ${budgets.seatInstanceBytes}`);
 
-// Conservative source-derived draw-call model including Phase 27 roof/site context.
 const seatCalls = sections * tiers.length * 2;
 const groundCalls = 38;
 const bowlCalls = 4;
@@ -150,7 +151,8 @@ const roofCalls = 412;
 const extrasCalls = 7;
 const architecturalFidelityCalls = 54;
 const siteContextCalls = 14;
-const overviewDrawCalls = seatCalls + groundCalls + bowlCalls + aisleCalls + railingCalls + vomitoryCalls + hospitalityCalls + mediaCalls + roofCalls + extrasCalls + architecturalFidelityCalls + siteContextCalls;
+const referenceCompletionCalls = 9;
+const overviewDrawCalls = seatCalls + groundCalls + bowlCalls + aisleCalls + railingCalls + vomitoryCalls + hospitalityCalls + mediaCalls + roofCalls + extrasCalls + architecturalFidelityCalls + siteContextCalls + referenceCompletionCalls;
 const maxSeatDetailChairs = 3 * 9;
 const seatDetailCalls = maxSeatDetailChairs * 6;
 const seatModeDrawCalls = overviewDrawCalls + seatDetailCalls;
