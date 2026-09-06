@@ -14,6 +14,7 @@ export const TRANSFORM_STAGES = Object.freeze([
   'harden-browser-runtime.mjs',
   'sanitize-generated-css.mjs',
   'aerial-stadium-style.mjs',
+  'reference-fidelity-prep.mjs',
   'reference-fidelity.mjs'
 ]);
 
