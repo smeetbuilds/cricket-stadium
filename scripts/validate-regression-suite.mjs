@@ -36,7 +36,8 @@ const expectedTransforms = [
   'optimize-responsive.mjs',
   'harden-browser-runtime.mjs',
   'sanitize-generated-css.mjs',
-  'aerial-stadium-style.mjs'
+  'aerial-stadium-style.mjs',
+  'reference-fidelity.mjs'
 ];
 const expectedValidators = [
   'validate-ui-ux.mjs',
@@ -89,7 +90,15 @@ const sharedRuntime = [
   [/document\.addEventListener\("visibilitychange"/, 'hidden-tab recovery'],
   [/addEventListener\("pageshow"/, 'BFCache recovery'],
   [/canvas\.addEventListener\("webglcontextrestored"/, 'WebGL context restoration'],
-  [/canvas\.addEventListener\("lostpointercapture"/, 'pointer-capture recovery']
+  [/canvas\.addEventListener\("lostpointercapture"/, 'pointer-capture recovery'],
+  [/capacity:110000,field:\{L:180\*\.9144,W:150\*\.9144\}/, '110k seated-capacity calibration'],
+  [/rows:38,rx:86\.8,rz:72\.8/, 'deeper lower bowl'],
+  [/rows:41,rx:118\.7,rz:104\.7/, 'deeper upper bowl'],
+  [/function\s+tensileRoofSurface\(\)/, 'tensile roof surface'],
+  [/const\s+tunnelSectionPattern=\{L:new Set\(/, 'irregular vomitory pattern'],
+  [/function\s+referenceSiteContext\(\)/, 'north arrival and site context'],
+  [/new THREE\.BoxGeometry\(54,\.9,rampLen\)/, '12m north arrival ramp'],
+  [/const campus=flat\(ellipse\(300,260\)/, 'expanded stadium campus']
 ];
 for (const [pattern, label] of sharedRuntime) need(pattern, label);
 
@@ -106,5 +115,5 @@ for (const [needle, label] of forbiddenBuildLeakage) {
 
 console.log(
   `Phase 16 consolidated regression suite validated: ${TRANSFORM_STAGES.length} ordered transforms, ` +
-  `${VALIDATION_STAGES.length} ordered read-only validators, final generated JS syntax, CSS escape hygiene, document structure and shared cross-phase runtime invariants`
+  `${VALIDATION_STAGES.length} ordered read-only validators, final generated JS syntax, CSS escape hygiene, document structure, shared runtime invariants and Phase 27 public-reference fidelity markers`
 );
