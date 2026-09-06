@@ -38,7 +38,8 @@ const expectedTransforms = [
   'sanitize-generated-css.mjs',
   'aerial-stadium-style.mjs',
   'reference-fidelity-prep.mjs',
-  'reference-fidelity.mjs'
+  'reference-fidelity.mjs',
+  'reference-completion.mjs'
 ];
 const expectedValidators = [
   'validate-ui-ux.mjs',
@@ -99,7 +100,13 @@ const sharedRuntime = [
   [/const\s+tunnelSectionPattern=\{L:new Set\(/, 'irregular vomitory pattern'],
   [/function\s+referenceSiteContext\(\)/, 'north arrival and site context'],
   [/new THREE\.BoxGeometry\(54,\.9,rampLen\)/, '12m north arrival ramp'],
-  [/const campus=flat\(ellipse\(300,260\)/, 'expanded stadium campus']
+  [/const campus=flat\(ellipse\(300,260\)/, 'expanded stadium campus'],
+  [/function\s+signatureFacade\(\)/, 'signature bronze wave facade'],
+  [/architecturalFacadeWall\(160\.55,145\.55,9\.0,28\.4,bronzeDark/, 'facade backing geometry'],
+  [/function\s+roofPerimeterTruss\(\)/, 'visible roof perimeter truss'],
+  [/ellipsePoint\(a\+step\*\.5,155\.75,141\.75,63\.2\)/, 'roof truss top chord'],
+  [/new THREE\.ShapeGeometry\(ledShape,192\)/, 'continuous roof-edge LED ring'],
+  [/<div class="fallback-meta"><div><b>110,000<\/b><span>seated capacity<\/span><\/div>/, 'fallback capacity parity']
 ];
 for (const [pattern, label] of sharedRuntime) need(pattern, label);
 
@@ -108,7 +115,8 @@ const forbiddenBuildLeakage = [
   ['TEMP-DO-NOT-USE', 'temporary deployment marker'],
   ['DO NOT USE', 'temporary deployment marker'],
   ['console.trace(', 'debug trace'],
-  ['debugger;', 'debugger statement']
+  ['debugger;', 'debugger statement'],
+  ['<div class="fallback-meta"><div><b>132,000</b><span>extended capacity</span></div>', 'stale fallback capacity label']
 ];
 for (const [needle, label] of forbiddenBuildLeakage) {
   if (html.includes(needle)) fail(`${label} leaked into production output`);
@@ -116,5 +124,6 @@ for (const [needle, label] of forbiddenBuildLeakage) {
 
 console.log(
   `Phase 16 consolidated regression suite validated: ${TRANSFORM_STAGES.length} ordered transforms, ` +
-  `${VALIDATION_STAGES.length} ordered read-only validators, final generated JS syntax, CSS escape hygiene, document structure, shared runtime invariants and Phase 27 public-reference fidelity markers`
+  `${VALIDATION_STAGES.length} ordered read-only validators, final generated JS syntax, CSS escape hygiene, ` +
+  `document structure, shared runtime invariants and Phase 28 public-reference completion markers`
 );
