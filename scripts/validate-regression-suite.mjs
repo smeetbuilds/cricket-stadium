@@ -37,6 +37,7 @@ const expectedTransforms = [
   'harden-browser-runtime.mjs',
   'sanitize-generated-css.mjs',
   'aerial-stadium-style.mjs',
+  'reference-fidelity-prep.mjs',
   'reference-fidelity.mjs'
 ];
 const expectedValidators = [
