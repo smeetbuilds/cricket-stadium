@@ -36,7 +36,6 @@ if (!process.exitCode) ok(`${required.length} interaction/performance/fallback i
 
 const inlineScripts = [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map((m) => m[1]).filter(Boolean);
 try {
-  // Compile only; do not execute browser-dependent code.
   new Function(inlineScripts.at(-1));
   ok("inline application JavaScript parses");
 } catch (error) {
@@ -52,9 +51,13 @@ if (html.includes("@media(max-width:800px)") && html.includes("@media(max-height
 const cfg = {
   sections: 48,
   tiers: [
-    { id: "L", rows: 35, rx: 86.8, rz: 72.8, depth: 0.86, spacing: 0.47, aisle: 0.031, tunnelRow: 13, tunnelRows: 5, tunnelEvery: 4 },
-    { id: "U", rows: 32, rx: 118.7, rz: 104.7, depth: 0.88, spacing: 0.48, aisle: 0.029, tunnelRow: 9, tunnelRows: 4, tunnelEvery: 4 }
+    { id: "L", rows: 38, rx: 86.8, rz: 72.8, depth: 0.86, spacing: 0.47, aisle: 0.031, tunnelRow: 13, tunnelRows: 5 },
+    { id: "U", rows: 41, rx: 118.7, rz: 104.7, depth: 0.88, spacing: 0.48, aisle: 0.029, tunnelRow: 9, tunnelRows: 4 }
   ]
+};
+const tunnelSections = {
+  L: new Set([1, 4, 8, 12, 17, 21, 25, 30, 34, 38, 42, 46]),
+  U: new Set([0, 5, 9, 13, 18, 22, 27, 31, 35, 39, 43, 47])
 };
 const circumference = (a, b) => {
   const h = ((a - b) ** 2) / ((a + b) ** 2);
@@ -62,7 +65,7 @@ const circumference = (a, b) => {
 };
 const blocked = (tier, row, local, section) =>
   Math.min(local, 1 - local) < tier.aisle ||
-  (section % tier.tunnelEvery === 1 &&
+  (tunnelSections[tier.id].has(section) &&
     row >= tier.tunnelRow &&
     row < tier.tunnelRow + tier.tunnelRows &&
     Math.abs(local - 0.5) < 0.19);
@@ -94,14 +97,14 @@ for (const tier of cfg.tiers) {
     perSection.set(sectionId, count);
   }
 }
-if (ids.size === generated && perSection.size === 96 && generated > 80000) {
+if (ids.size === generated && perSection.size === 96 && generated === 109910) {
   ok(`${generated.toLocaleString()} stable unique generated seat IDs across 96 sections`);
 } else {
   fail(`procedural seat model invalid: ${generated} seats / ${ids.size} unique / ${perSection.size} sections`);
 }
 
 const counts = [...perSection.values()];
-if (Math.min(...counts) > 750 && Math.max(...counts) < 1100) ok(`section instance range sane (${Math.min(...counts)}–${Math.max(...counts)})`);
+if (Math.min(...counts) >= 899 && Math.max(...counts) <= 1365) ok(`section instance range sane (${Math.min(...counts)}–${Math.max(...counts)})`);
 else fail("section instance counts are outside expected bounds");
 
 if (!/football|vite|javascript\.svg|hero\.png|counter\.js/i.test(
