@@ -80,7 +80,7 @@ requireAll(shell, [
   '<strong>Motera 3D · Narendra Modi Stadium</strong>',
   '<span>Ahmedabad, Gujarat · procedural cricket seat explorer</span>',
   '<em>Unofficial public-reference recreation</em>',
-  '<b>132,000</b><span>extended capacity</span>',
+  '<b>110,000</b><span>seated capacity</span>',
   '<b>180 × 150 yd</b><span>published field</span>',
   '<b>2 tiers</b><span>primary bowl</span>',
   '<span>Seat explorer</span><span class="pill" id="tier">Select a seat</span>',
