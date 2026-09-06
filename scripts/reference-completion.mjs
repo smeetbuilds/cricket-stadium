@@ -52,7 +52,7 @@ const pavilionAndFacade = `    function architecturalPavilion(){
       const ledShape=ring(123.35,107.95,122.7,107.3),led=new THREE.Mesh(new THREE.ShapeGeometry(ledShape,192),new THREE.MeshBasicMaterial({color:0xffefd0,side:THREE.DoubleSide}));led.rotation.x=-Math.PI/2;led.position.y=52.72;led.raycast=()=>{};scene.add(led)
     }
 `;
-replaceSegment('    function architecturalPavilion(){', '    function architecturalFidelity(){', pavilionAndFacade + '    function architecturalFidelity(){', 'pavilion/facade block');
+replaceSegment('    function architecturalPavilion(){', '    function architecturalFidelity(){', pavilionAndFacade, 'pavilion/facade block');
 
 replaceOnce(
   'roof();architecturalFidelity();referenceSiteContext();await yieldToBrowser();',
