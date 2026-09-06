@@ -2,7 +2,7 @@
 
 Release scope: unofficial, noncommercial, procedural Narendra Modi Stadium / Motera 3D seat-view explorer.
 
-This document records the implementation after the Phase 28 reference-completion pass. **PASS** means implemented and protected by the production build/regression pipeline. **CONSTRAINED** means the implementation is intentionally approximate because authoritative venue data, permissions, or physical-device acceptance testing are still required. **DEFERRED** means the work belongs in a separate architecture/dependency migration. **PENDING** means implemented on the release branch but awaiting the current PR validation/merge/deployment step.
+This document records the implementation after the Phase 28 reference-completion pass. **PASS** means implemented and protected by the production build/regression pipeline. **CONSTRAINED** means the implementation is intentionally approximate because authoritative venue data, permissions, or physical-device acceptance testing are still required. **DEFERRED** means the work belongs in a separate architecture/dependency migration. **BLOCKED** means the code is complete and validated but an external service/account condition currently prevents the remaining delivery step.
 
 ## Current release status
 
@@ -31,9 +31,9 @@ This document records the implementation after the Phase 28 reference-completion
 | Performance budget | PASS | The 109,910-chair model plus Phase 28 exterior additions are explicitly budgeted for interactive-seat count, per-section instances, instance attributes, draw calls, HTML size, framebuffer size and shadow-map policy. |
 | Rendering lifecycle | PASS | Invalidation-driven rendering, bounded marker animation, hidden-tab recovery, BFCache handling and WebGL context recovery remain protected. |
 | Responsive/accessibility shell | PASS | Existing mobile/tablet/short-screen guards and accessible Block/Bay controls remain in the validation chain. |
-| Automatic GitHub validation | PENDING | Workflow now runs `npm run check` and preview smoke testing on PRs to `main`, pushes to `main`, and manual dispatch; this release must demonstrate a successful run before merge. |
-| Phase 27 live production | PASS | Merge commit `72c3a200e5ee23616ff30f123c3a1aacfbb8ca17` is live on Vercel production. |
-| Phase 28 production deployment | PENDING | Vercel currently reports a build-rate-limit status for branch previews; Phase 28 must pass GitHub validation, merge to `main`, and then be verified on the production alias. |
+| Automatic GitHub validation | PASS | PR #2 and the resulting `main` merge both passed `npm run check` plus the preview smoke test; validation now runs automatically on PRs to `main` and pushes to `main`, with manual dispatch retained. |
+| Phase 28 merged to `main` | PASS | PR #2 was merged as commit `47cf1fcf4967fbc1ea79892d32a520485b3a1079`. |
+| Phase 28 production deployment | BLOCKED | Vercel reports its account build-rate limit for the Phase 28 merge commit, so no new production deployment has been created yet. The previously deployed Phase 27 production remains the currently served build until Vercel accepts a new build. |
 | Physical cross-browser/device QA | CONSTRAINED | Code-level safeguards exist; acceptance on real Safari/iOS, Firefox, Android and multiple GPU classes remains external. |
 | Authoritative digital twin | CONSTRAINED | A genuine seat-accurate digital twin requires permitted CAD/BIM, survey information and official Block/Bay/Row/Seat inventory. |
 | CDN runtime dependencies | DEFERRED | Three.js r128 and GSAP 3.12.5 remain pinned on cdnjs; self-hosting/SRI/CSP belongs in a dedicated dependency migration. |
@@ -41,8 +41,8 @@ This document records the implementation after the Phase 28 reference-completion
 | Source architecture consolidation | DEFERRED | The ordered text-transform build remains in place; conversion to canonical modular source is a separate architecture migration. |
 | Commercial rights | CONSTRAINED | The code remains derived from StadiView under the repository's noncommercial/community licensing terms; commercial use needs appropriate rights or a clean-room replacement. |
 
-## Phase 28 acceptance criteria
+## Phase 28 acceptance result
 
-Phase 28 is acceptable for merge when the complete production build succeeds, all read-only validators pass, the preview smoke test serves the generated Motera 3D application, and no existing Block/Bay, seat-picking, camera, responsive, browser-runtime or performance invariant regresses.
+Phase 28 passed the complete production build, all read-only validators, and the preview smoke test on PR #2 and again on the merged `main` commit. Existing Block/Bay, seat-picking, camera, responsive, browser-runtime and performance invariants remain protected.
 
-Passing Phase 28 means **a more faithful public-reference recreation with corrected exterior identity and roof silhouette**. It does not mean the project has become an official Gujarat Cricket Association model or an engineering/survey-grade digital twin.
+Phase 28 therefore qualifies as **a more faithful public-reference recreation with corrected exterior identity and roof silhouette**. It does not make the project an official Gujarat Cricket Association model or an engineering/survey-grade digital twin. Production delivery is currently an external Vercel build-rate-limit issue rather than a failed code acceptance criterion.
