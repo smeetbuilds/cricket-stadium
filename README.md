@@ -2,7 +2,7 @@
 
 **Unofficial procedural 3D Narendra Modi Stadium seat-view explorer.**
 
-Motera 3D is a noncommercial experimental recreation of Narendra Modi Stadium in Ahmedabad. It generates the cricket ground, two-tier seating bowl, tensile-roof approximation, hospitality/media bands, aisles, vomitories, railings, selectable seat instances, signature exterior treatment, and public-reference site context in the browser.
+Motera 3D is a noncommercial experimental recreation of Narendra Modi Stadium in Ahmedabad. It generates the cricket ground, two-tier seating bowl, tensile-roof approximation, hospitality/media bands, aisles, vomitories, railings, selectable seat instances, a public-reference exterior treatment, and site context in the browser.
 
 **Live deployment:** https://cricket-stadium-eight.vercel.app
 
@@ -14,11 +14,12 @@ Motera 3D is a noncommercial experimental recreation of Narendra Modi Stadium in
 - Two principal seating tiers calibrated to about **109,910 rendered interactive chairs**, close to the publicly stated **110,000 seated capacity**; **132,000** remains an extended-capacity reference rather than the generated chair count
 - Lower/upper bowl depth expanded without artificially shrinking chair pitch
 - Irregularized vomitory rhythm instead of mechanically repeating the same opening every four render sections
-- Cable-supported tensile-roof approximation with inner tension ring, outer compression-ring treatment, radial ridge/valley cables, and an inner catwalk
-- Visible perimeter roof-truss treatment and continuous inner roof-edge light ring to better match the real roof silhouette
+- Cable-supported tensile-roof approximation with inner tension ring, **bi-chord outer compression-ring treatment**, radial ridge/valley cables, and an inner catwalk
+- Shallow compression-ring bracing instead of the speculative tall outer roof crown introduced in Phase 28
+- **580 distributed catwalk luminaires** represented with an instanced ring-lighting system instead of a continuous glowing strip
 - Roof-support V-columns rising from concourse level rather than from grade, keeping roof and concrete-bowl systems visually independent
 - Public-reference **three-level south pavilion** treatment with glazing/deck bands; exact dimensions remain approximate without CAD/BIM
-- Restored **bronze/gold wave/eye façade** and curved glazed entrance treatment based on public exterior photography, replacing Phase 27's over-correction that removed this real architectural signature
+- Ahmedabad-specific **doubly-curved segmented aluminium eye-façade treatment** with tube backing, replacing Phase 28's generic five-ribbon interpretation; exact finish, panel sizes, placement and curvature remain approximate
 - Public-reference north arrival sequence with a ramp rising about **12 m** to an elevated podium and a vehicular zone below
 - Enlarged stadium campus context, three practice-ground representations, and an academy/podium massing layer; exact site placement remains approximate without survey/CAD data
 - Stable generated internal seat IDs across device classes, with adaptive pixel ratio and close-range seat-back detail LOD
@@ -31,18 +32,23 @@ Motera 3D is a noncommercial experimental recreation of Narendra Modi Stadium in
 - WebGL/library failure fallback with the same seated-capacity labeling as the normal UI
 - Responsive layouts for desktop, tablet, short screens, and mobile
 
-## Public architectural references
+## Reference provenance
 
-The recreation is calibrated from public information rather than confidential drawings or ticket inventory:
+Architectural geometry is now governed by [`REFERENCE-SOURCES.md`](REFERENCE-SOURCES.md). Search-engine imagery is treated only as a discovery aid; geometry must be traceable to a source that explicitly identifies **Narendra Modi Stadium / Motera Stadium in Ahmedabad, Gujarat**.
+
+Primary/project sources currently used are:
 
 - [Gujarat Cricket Association — Narendra Modi Stadium](https://gujaratcricketassociation.com/narendra-modi-stadium/)
-- [Gujarat Cricket Association — About GCA](https://gujaratcricketassociation.com/about-gca/)
+- [Gujarat Cricket Association — Stadium Gallery](https://gujaratcricketassociation.com/msgallery/gca-stadium-gallery/)
 - [Populous — Narendra Modi Stadium](https://populous.com/preview/narendra-modi-stadium)
 - [Walter P Moore — Narendra Modi Stadium Roof Design](https://www.walterpmoore.com/projects/narendra-modi-stadium-roof-design)
+- [HIFAB — Narendra Modi Stadium façade project](https://www.hifab.in/projects/narendra-modi-stadium/)
+- [SSMB — Sardar Patel Motera Cricket Stadium construction article](https://test2.ssmb.in/sardar-patel-motera-cricket-stadium-ahmedabad/)
+- [Mondo Stadia project-team article hosted by Walter P Moore](https://assets.walterpmoore.com/sites/default/files/mondo_stadia_-_motera_stadium.pdf)
 
-These public references support broad characteristics including the **110,000 seated-capacity design**, **132,000 extended capacity**, two-tier open bowl, approximately **30 m** tensile-roof cantilever, inner/outer roof-ring system, diagonal roof supports, north-side **12 m** arrival ramp/elevated podium, 76 corporate boxes, academy context, and three practice grounds. Public exterior photography also supports the stadium's distinctive bronze/gold undulating façade and glazed entrance treatment.
+These sources support broad characteristics including the **110,000 seated-capacity design**, **132,000 extended capacity**, two-tier open bowl, approximately **30 m** tensile-roof cantilever, single inner tension ring, **bi-chord** outer compression-ring system, radial cables, diagonal roof supports, north-side **12 m** arrival ramp/elevated podium, 76 corporate boxes, academy context, three practice grounds, a **three-dimensional eye-shaped / doubly-curved segmented aluminium façade**, and a catwalk lighting system using **580 Philips ArenaVision luminaires**.
 
-They do **not** provide an authoritative seat-by-seat manifest, full stadium CAD/BIM geometry, exact public vomitory schedule, complete façade panel shop drawings, or survey-grade site coordinates. The project therefore treats the architectural work as a substantially closer public-reference recreation, not an official digital twin.
+They do **not** provide an authoritative seat-by-seat manifest, full stadium CAD/BIM geometry, exact public vomitory schedule, complete façade panel shop drawings, roof-node coordinates, pavilion floor plates, or survey-grade site coordinates. The project therefore remains a public-reference recreation, not an official digital twin.
 
 ## Run locally
 
@@ -70,7 +76,7 @@ npm run build
 npm run preview
 ```
 
-The production build runs the ordered transform pipeline and then the UI/UX, responsive, performance, browser/runtime, and consolidated regression validators. Phase 28 runs after the Phase 27 bowl/roof/site pass and before all read-only validators. GitHub Actions runs the same checks automatically for pull requests to `main` and pushes to `main`, with manual dispatch retained as a fallback.
+The production build runs the ordered transform pipeline and then the UI/UX, responsive, performance, browser/runtime, and consolidated regression validators. Phase 29 runs after the Phase 28 completion pass and removes unsupported Phase 28 façade/roof interpretations before all read-only validators. GitHub Actions runs the same checks automatically for pull requests to `main` and pushes to `main`, with manual dispatch retained as a fallback.
 
 ## Controls
 
@@ -116,7 +122,7 @@ The stadium uses section-level `THREE.InstancedMesh` groups rather than one mesh
 
 On mobile devices, pixel ratio and seat-back detail density are reduced. On low-resource devices, backrest instances can be omitted entirely. Seat backrests are hidden at long camera distances and restored at closer ranges or in seat view when available.
 
-Rendering is invalidation-driven. The selected-seat marker pulses for a bounded interval instead of keeping the full WebGL scene in a permanent animation loop. Phase 28's façade and perimeter-truss additions are included in the explicit draw-call/HTML-size regression budget.
+Rendering is invalidation-driven. The selected-seat marker pulses for a bounded interval instead of keeping the full WebGL scene in a permanent animation loop. Phase 29 also corrects the earlier exterior draw-call underestimate: the performance model now counts the multi-level pavilion plus the corrected façade skin, tube backing, compression-ring bracing and instanced lighting system.
 
 ## Authoritative-data boundary
 
@@ -127,24 +133,26 @@ The same limitation applies to exact pavilion dimensions, bowl rake/riser geomet
 ## Project structure
 
 ```text
-index.html                           # Base browser experience before production transforms
-public/favicon.svg                   # Motera 3D favicon
-scripts/build.mjs                    # Initial static build/compatibility transform
-scripts/build-pipeline.mjs           # Authoritative ordered production build orchestrator
-scripts/pipeline-stages.mjs          # Transform/validator stage manifest
-scripts/aerial-stadium-style.mjs     # Phase 26 visual/exterior fidelity pass
-scripts/reference-fidelity-prep.mjs  # Preserves architectural helpers for Phase 27
-scripts/reference-fidelity.mjs       # Phase 27 bowl/roof/arrival/site fidelity pass
-scripts/reference-completion.mjs     # Phase 28 facade/pavilion/roof completion pass
-scripts/sanitize-generated-css.mjs   # CSS sanitation transform
-scripts/stability-hardening.mjs      # Earlier non-visual stability hardening
-scripts/validate-*.mjs               # Final UI, responsive, performance, browser and regression guards
-scripts/serve.mjs                    # Zero-dependency preview/static server
-scripts/check.mjs                    # Source static/procedural regression checks
-.github/workflows/ci.yml             # Automatic PR/main validation + manual fallback
-LICENSE.md                           # Upstream community license
-COMMERCIAL-LICENSE.md                # Upstream commercial-use information
-THIRD_PARTY_NOTICES.md               # Third-party notices
+index.html                                   # Base browser experience before production transforms
+public/favicon.svg                           # Motera 3D favicon
+REFERENCE-SOURCES.md                         # Ahmedabad-only architectural source/provenance rules
+scripts/build.mjs                            # Initial static build/compatibility transform
+scripts/build-pipeline.mjs                   # Authoritative ordered production build orchestrator
+scripts/pipeline-stages.mjs                  # Transform/validator stage manifest
+scripts/aerial-stadium-style.mjs             # Phase 26 visual/exterior fidelity pass
+scripts/reference-fidelity-prep.mjs          # Preserves architectural helpers for Phase 27
+scripts/reference-fidelity.mjs               # Phase 27 bowl/roof/arrival/site fidelity pass
+scripts/reference-completion.mjs             # Phase 28 completion pass
+scripts/ahmedabad-reference-correction.mjs   # Phase 29 Ahmedabad-only provenance correction
+scripts/sanitize-generated-css.mjs           # CSS sanitation transform
+scripts/stability-hardening.mjs               # Earlier non-visual stability hardening
+scripts/validate-*.mjs                        # Final UI, responsive, performance, browser and regression guards
+scripts/serve.mjs                             # Zero-dependency preview/static server
+scripts/check.mjs                             # Source static/procedural regression checks
+.github/workflows/ci.yml                      # Automatic PR/main validation + manual fallback
+LICENSE.md                                    # Upstream community license
+COMMERCIAL-LICENSE.md                         # Upstream commercial-use information
+THIRD_PARTY_NOTICES.md                        # Third-party notices
 ```
 
 ## Licensing and attribution
@@ -153,4 +161,4 @@ This repository is derived from **StadiView** by **thebuggeddev** and retains th
 
 Commercial use requires separate permission under the terms described in [`COMMERCIAL-LICENSE.md`](COMMERCIAL-LICENSE.md). Third-party libraries remain subject to their own licenses; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-Motera 3D is an unofficial project and is not affiliated with or endorsed by Gujarat Cricket Association, Narendra Modi Stadium, Populous, Walter P Moore, or Larsen & Toubro.
+Motera 3D is an unofficial project and is not affiliated with or endorsed by Gujarat Cricket Association, Narendra Modi Stadium, Populous, Walter P Moore, HIFAB, Larsen & Toubro, or the cited publishers.
