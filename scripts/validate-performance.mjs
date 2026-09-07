@@ -40,10 +40,14 @@ for (const marker of [
   'function referenceSiteContext(){',
   'new THREE.BoxGeometry(54,.9,rampLen)',
   'const campus=flat(ellipse(300,260)',
-  'function signatureFacade(){',
-  'architecturalFacadeWall(160.55,145.55,9.0,28.4,bronzeDark',
-  'function roofPerimeterTruss(){',
-  'new THREE.ShapeGeometry(ledShape,192)',
+  'function doubleCurveEyeFacade(){',
+  'uSeg=64,vSeg=8,y0=8.8,y1=28.0',
+  'architecturalBeamInstances(tubePairs,.045,steel)',
+  'function roofCompressionRingBracing(){',
+  'ellipsePoint(a,155.2,141.2,56.15)',
+  'ellipsePoint(a,154.7,140.7,55.55)',
+  'function roofRingLighting(){',
+  'const count=580,geo=new THREE.BoxGeometry(.82,.13,.24)',
   'const qualityLow=mobile||lowPower,backLOD=lowPower?190:(mobile?215:250);',
   'const renderPhone=matchMedia("(max-width: 520px)").matches,renderAntialias=!lowPower&&!renderPhone;',
   'const budget=profile==="low"?1800000:(profile==="phone"?2400000:(profile==="mobile"?3200000:(profile==="tablet"?4800000:7500000)));',
@@ -151,7 +155,10 @@ const roofCalls = 412;
 const extrasCalls = 7;
 const architecturalFidelityCalls = 54;
 const siteContextCalls = 14;
-const referenceCompletionCalls = 9;
+// Phase 29 replaces Phase 28's 9-call underestimate. The pavilion alone contains
+// 49 separate meshes; corrected facade, tube backing, compression bracing and
+// instanced 580-light ring add four more draw calls.
+const referenceCompletionCalls = 53;
 const overviewDrawCalls = seatCalls + groundCalls + bowlCalls + aisleCalls + railingCalls + vomitoryCalls + hospitalityCalls + mediaCalls + roofCalls + extrasCalls + architecturalFidelityCalls + siteContextCalls + referenceCompletionCalls;
 const maxSeatDetailChairs = 3 * 9;
 const seatDetailCalls = maxSeatDetailChairs * 6;
