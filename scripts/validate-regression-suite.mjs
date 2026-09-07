@@ -39,7 +39,8 @@ const expectedTransforms = [
   'aerial-stadium-style.mjs',
   'reference-fidelity-prep.mjs',
   'reference-fidelity.mjs',
-  'reference-completion.mjs'
+  'reference-completion.mjs',
+  'ahmedabad-reference-correction.mjs'
 ];
 const expectedValidators = [
   'validate-ui-ux.mjs',
@@ -101,11 +102,14 @@ const sharedRuntime = [
   [/function\s+referenceSiteContext\(\)/, 'north arrival and site context'],
   [/new THREE\.BoxGeometry\(54,\.9,rampLen\)/, '12m north arrival ramp'],
   [/const campus=flat\(ellipse\(300,260\)/, 'expanded stadium campus'],
-  [/function\s+signatureFacade\(\)/, 'signature bronze wave facade'],
-  [/architecturalFacadeWall\(160\.55,145\.55,9\.0,28\.4,bronzeDark/, 'facade backing geometry'],
-  [/function\s+roofPerimeterTruss\(\)/, 'visible roof perimeter truss'],
-  [/ellipsePoint\(a\+step\*\.5,155\.75,141\.75,63\.2\)/, 'roof truss top chord'],
-  [/new THREE\.ShapeGeometry\(ledShape,192\)/, 'continuous roof-edge LED ring'],
+  [/function\s+doubleCurveEyeFacade\(\)/, 'Ahmedabad double-curved eye facade'],
+  [/uSeg=64,vSeg=8,y0=8\.8,y1=28\.0/, 'segmented aluminium facade grid'],
+  [/architecturalBeamInstances\(tubePairs,\.045,steel\)/, 'bent-tube facade backing'],
+  [/function\s+roofCompressionRingBracing\(\)/, 'shallow bi-chord compression ring bracing'],
+  [/ellipsePoint\(a,155\.2,141\.2,56\.15\)/, 'upper compression-ring chord'],
+  [/ellipsePoint\(a,154\.7,140\.7,55\.55\)/, 'lower compression-ring chord'],
+  [/function\s+roofRingLighting\(\)/, 'distributed roof catwalk lighting'],
+  [/const count=580,geo=new THREE\.BoxGeometry\(\.82,\.13,\.24\)/, '580 catwalk luminaires'],
   [/<div class="fallback-meta"><div><b>110,000<\/b><span>seated capacity<\/span><\/div>/, 'fallback capacity parity']
 ];
 for (const [pattern, label] of sharedRuntime) need(pattern, label);
@@ -116,7 +120,12 @@ const forbiddenBuildLeakage = [
   ['DO NOT USE', 'temporary deployment marker'],
   ['console.trace(', 'debug trace'],
   ['debugger;', 'debugger statement'],
-  ['<div class="fallback-meta"><div><b>132,000</b><span>extended capacity</span></div>', 'stale fallback capacity label']
+  ['<div class="fallback-meta"><div><b>132,000</b><span>extended capacity</span></div>', 'stale fallback capacity label'],
+  ['function signatureFacade(){', 'generic Phase 28 ribbon facade'],
+  ['for(let i=0;i<5;i++){const phase=i*.82,baseY=11.2+i*3.55;', 'speculative five-ribbon facade'],
+  ['function roofPerimeterTruss(){', 'invented tall roof crown'],
+  ['ellipsePoint(a+step*.5,155.75,141.75,63.2)', 'invented roof crown top chord'],
+  ['new THREE.ShapeGeometry(ledShape,192)', 'continuous LED ring approximation']
 ];
 for (const [needle, label] of forbiddenBuildLeakage) {
   if (html.includes(needle)) fail(`${label} leaked into production output`);
@@ -125,5 +134,5 @@ for (const [needle, label] of forbiddenBuildLeakage) {
 console.log(
   `Phase 16 consolidated regression suite validated: ${TRANSFORM_STAGES.length} ordered transforms, ` +
   `${VALIDATION_STAGES.length} ordered read-only validators, final generated JS syntax, CSS escape hygiene, ` +
-  `document structure, shared runtime invariants and Phase 28 public-reference completion markers`
+  `document structure, shared runtime invariants and Phase 29 Ahmedabad-only reference correction markers`
 );
