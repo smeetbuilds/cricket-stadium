@@ -16,7 +16,8 @@ export const TRANSFORM_STAGES = Object.freeze([
   'aerial-stadium-style.mjs',
   'reference-fidelity-prep.mjs',
   'reference-fidelity.mjs',
-  'reference-completion.mjs'
+  'reference-completion.mjs',
+  'ahmedabad-reference-correction.mjs'
 ]);
 
 export const VALIDATION_STAGES = Object.freeze([
